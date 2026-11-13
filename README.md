@@ -1,88 +1,83 @@
-# DND Character Workshop
+# 🎲 DND Character Workshop
 
-**Karakter Atölyesi** · Tek dosyalık, tarayıcıda çalışan D&D karakter sheet oluşturucu.
-A single-file, in-browser D&D character sheet builder.
+![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
+![Platform](https://img.shields.io/badge/platform-Browser-darkred.svg)
+![Language](https://img.shields.io/badge/language-TR%20%7C%20EN-blue.svg)
+![Offline](https://img.shields.io/badge/works-offline-lightgrey.svg)
+![Editions](https://img.shields.io/badge/D%26D%20editions-6-orange.svg)
 
-![Açık tema / Light theme](docs/screenshot-light.png)
+A single HTML file that builds D&D character sheets for six editions of the game. Pick an edition and the creation screen, the rules and the three-page sheet all follow it. No server, no build step, no installation, no internet connection. Download one file, open it and create your character.
 
-[Türkçe](#türkçe) · [English](#english)
+## 🚀 Key Features
+
+* ✅ **Zero setup:** One HTML file, no dependencies, no web server. Works offline by double-clicking. The page makes no network requests at all, not even web fonts.
+* ✅ **Six editions in one tool:** Choose from a dropdown and the form changes to match.
+  * **B/X (1981):** Race-as-class, 3d6 in order, THAC0 19, saving throw tables, prime requisite XP bonus.
+  * **AD&D 2nd Edition (1989):** Races with class restrictions, ability adjustment tables, THAC0, descending AC, weapon and nonweapon proficiency slots.
+  * **D&D 3.5 (2003):** Point buy, BAB, saves, skill ranks (class and cross-class), feats, levels 1 to 20.
+  * **D&D 4th Edition (2008):** Roles and power sources, four defenses, healing surges, trained skills, levels 1 to 20.
+  * **D&D 5th Edition (2014):** Races and subraces, backgrounds, proficiencies, spell slots, levels 1 to 20.
+  * **D&D 5.5 (2024):** Ability bonuses from the background (+2/+1 or +1/+1/+1) and an Origin feat for each background.
+* ✅ **Random character:** One button rolls a whole character, or use the dice next to any field to randomize just that one.
+* ✅ **Ability score methods:** 3d6, 4d6 drop lowest, standard array, point buy and manual entry, with an "auto-assign for class" helper.
+* ✅ **Real character sheet:** Three pages inspired by the official 5E layout, adapted to the chosen edition.
+  * **Character:** Ability scores, saves, skills, AC, initiative, speed, HP, hit dice, death saves, attacks, equipment, coins, personality, ideals, bonds and flaws.
+  * **Story & looks:** Age, height, weight, eyes, skin, hair, **your own picture**, appearance, backstory, allies, additional features and treasure.
+  * **Spells (Powers in 4e):** Slots per spell level, used slots and a lined spell list for each level.
+* ✅ **Export and import:** Save the whole character, picture included, to a `.json` file and load it back later or on another device.
+* ✅ **Saved characters:** Keep several characters in your browser and reload them with one click. Copy any sheet as plain text.
+* ✅ **Private by design:** Nothing is uploaded. Everything you type is shown as plain text, never as HTML, and imported files are validated before use.
+* ✅ **True black theme:** Pure `#000000` background for OLED screens, plus a light theme. The default follows your system.
+* ✅ **Bilingual:** Turkish and English interface, selected automatically from your browser language and switchable at any time.
+* ✅ **Phone ready:** The builder and the sheet switch between two tabs on small screens.
+
+## 💻 Usage
+
+> [!NOTE]
+> There is nothing to install. The file runs entirely inside your browser.
+
+1. Download `dnd-character-workshop.html`
+2. Open it in any modern browser (double-click is enough)
+3. Pick an edition, build your character, then **Save** or **Export** it
+
+Limits: Class features beyond level 1 are not listed and 3.5 feat prerequisites are not checked. Spell slots are fully computed for 5e. In 3.5 they are computed only for Wizard, Cleric, Druid and Sorcerer; for other casters enter the slots by hand. B/X and AD&D 2e characters start at level 1.
+
+> [!TIP]
+> To use it on a phone, host the file on any static host (GitHub Pages, Netlify, Cloudflare Pages) and use "Add to Home Screen". Browsers store saved characters per site, so use **Export** and **Import** to move a character between devices.
+
+## 📸 Screenshots
+
+(Light theme, 5e Wizard)
+
+![Light theme](docs/screenshot-light.png)
+
+(Pure Black theme, 5e Wizard)
+
+![Pure black theme](docs/screenshot-dark.png)
+
+(Spell page, pure black theme)
+
+![Spell page](docs/screenshot-spells.png)
+
+(AD&D 2nd Edition fighter)
+
+![AD&D 2e sheet](docs/screenshot-2e.png)
+
+## 🔒 Data & Privacy
+
+No accounts, no tracking, no network requests. Saved characters live only in your browser's `localStorage`, together with your language and theme choice. An exported file is a plain JSON document that contains your character fields and your picture (as a JPEG, base64-encoded). Pictures are scaled down to 640 px on their longest side when you add them.
+
+## 📋 Requirements
+
+Any modern browser: Chrome, Edge, Firefox, Safari, or their mobile versions. There is nothing else to install.
+
+## ⚖️ Disclaimer
+
+This is an unofficial fan tool. Dungeons & Dragons is a trademark of Wizards of the Coast, and this project is not affiliated with them. Please do not add official character sheet PDFs or copyrighted rules text to this repository.
+
+## 📄 License
+
+Copyright (C) 2026 Oktay Mercan https://github.com/OKTAYMERCAN/DND-character-workshop
 
 ---
-
-## Türkçe
-
-Bir D&D sürümü seçin; form, kurallar ve karakter sheet'i o sürüme göre değişir. Sunucu, derleme adımı ya da bağımlılık yoktur: `index.html` dosyasını tarayıcıda açmanız yeterli.
-
-### Özellikler
-
-- **6 sürüm:** B/X (1981), AD&D 2. Baskı, D&D 3.5, 4. Baskı, 5. Baskı (2014) ve 5.5 (2024).
-- **Sürüme göre oluşturma ekranı:** ırk, sınıf, geçmiş, hizalanma ve yetenek bonusları her sürümün kendi kurallarına göre hesaplanır.
-- **Rastgele karakter:** tek tuşla tüm karakter, ya da zar simgesiyle tek tek alanlar.
-- **Yetenek puanı yöntemleri:** 3d6, 4d6 (en düşüğü at), standart dizi, puan satın alma, elle giriş.
-- **3 sayfalık sheet** (resmî 5E sheet düzeninden esinlenilmiştir):
-  1. Karakter: statlar, kurtarmalar, beceriler, AC, can, saldırılar, ekipman, kişilik.
-  2. Hikâye ve görünüm: yaş, boy, kilo, göz/ten/saç, **resim ekleme**, hikâye, müttefikler, hazine.
-  3. Büyüler (4e'de Güçler): büyü yuvaları ve seviye başına büyü listeleri.
-- **Dışa ve içe aktarma:** karakter resmiyle birlikte JSON olarak.
-- **Kayıtlı karakterler:** tarayıcıda (`localStorage`) saklanır.
-- **Arayüz:** Türkçe / İngilizce, aydınlık ve tam siyah OLED tema, telefon uyumlu.
-
-### Kullanım
-
-1. Depoyu indirin ve `index.html` dosyasını tarayıcıda açın.
-2. Ya da GitHub Pages'i açın: *Settings → Pages → Deploy from a branch → `main` / `(root)`*.
-
-### Veri ve gizlilik
-
-Her şey tarayıcınızda kalır. Karakterler yalnızca cihazınızdaki `localStorage` içinde saklanır; dışarı veri gönderilmez. Tek dış istek, yazı tipleri için Google Fonts'tur (çevrimdışıyken sistem fontlarına düşer).
-
-### Bilinen sınırlar
-
-- Seviye 1 sonrası sınıf özellikleri listelenmez; 3.5 feat ön koşulları denetlenmez.
-- Büyü yuvaları 5e için tam hesaplanır. 3.5'te yalnızca Sihirbaz, Rahip, Druid ve Büyücü için hesaplanır; diğer durumlarda yuvalar elle girilir.
-- B/X ve AD&D 2e karakterleri 1. seviyeden başlar.
-
----
-
-## English
-
-Pick a D&D edition and the form, rules and character sheet follow it. There is no server, build step or dependency: open `index.html` in a browser.
-
-### Features
-
-- **6 editions:** B/X (1981), AD&D 2nd Edition, D&D 3.5, 4th Edition, 5th Edition (2014) and 5.5 (2024).
-- **Edition-aware creation:** race, class, background, alignment and ability bonuses follow each edition's own rules.
-- **Random character:** one button for a full character, or the dice icons for single fields.
-- **Ability score methods:** 3d6, 4d6 drop lowest, standard array, point buy, manual entry.
-- **3-page sheet** (inspired by the official 5E sheet layout):
-  1. Character: ability scores, saves, skills, AC, HP, attacks, equipment, personality.
-  2. Story & looks: age, height, weight, eyes/skin/hair, **image upload**, backstory, allies, treasure.
-  3. Spells (Powers in 4e): spell slots and per-level spell lists.
-- **Export and import:** as JSON, including the character image.
-- **Saved characters:** stored in the browser (`localStorage`).
-- **Interface:** Turkish / English, light and true-black OLED themes, mobile friendly.
-
-### Usage
-
-1. Download the repository and open `index.html` in a browser.
-2. Or enable GitHub Pages: *Settings → Pages → Deploy from a branch → `main` / `(root)`*.
-
-### Data and privacy
-
-Everything stays in your browser. Characters are stored only in your device's `localStorage` and nothing is sent anywhere. The only external request is Google Fonts for typefaces (it falls back to system fonts offline).
-
-### Known limitations
-
-- Class features beyond level 1 are not listed and 3.5 feat prerequisites are not checked.
-- Spell slots are fully computed for 5e. In 3.5 they are computed only for Wizard, Cleric, Druid and Sorcerer; otherwise enter them by hand.
-- B/X and AD&D 2e characters start at level 1.
-
----
-
-![Koyu tema / Dark theme](docs/screenshot-dark.png)
-
-## Yasal not / Legal
-
-Resmî olmayan bir hayran aracıdır. Dungeons & Dragons, Wizards of the Coast'un tescilli markasıdır; bu proje onunla bağlantılı değildir. Resmî karakter sheet PDF'lerini ya da telifli kural metinlerini depoya eklemeyin.
-
-Unofficial fan tool. Dungeons & Dragons is a trademark of Wizards of the Coast; this project is not affiliated with them. Do not commit official character sheet PDFs or copyrighted rules text to this repository.
+AI used.
