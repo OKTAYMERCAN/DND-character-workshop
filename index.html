@@ -1,0 +1,1471 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Karakter Atölyesi</title>
+<meta name="description" content="D&D karakter sheet oluşturucu: B/X, AD&D 2e, 3.5, 4e, 5e ve 5.5. / D&D character sheet builder for B/X, AD&D 2e, 3.5, 4e, 5e and 5.5.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%230A6C6C%27 stroke-width=%271.6%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M12 2.5 20.5 7.4v9.2L12 21.5 3.5 16.6V7.4z%27/%3E%3Cpath d=%27M12 2.5 7.5 15.5h9zM3.5 7.4l4 8.1M20.5 7.4l-4 8.1M7.5 15.5 12 21.5l4.5-6%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+body{margin:0}img{max-width:100%}
+
+/* Layout: a workbench column for choices beside a character sheet that updates live; phones switch between the two with tabs */
+:root{
+  --bg:#EDF1F2; --surface:#FFFFFF; --surface-2:#E1E8EA; --line:#C6D2D5;
+  --fg:#0F171A; --muted:#4D5F66; --accent:#0A6C6C; --accent-fg:#FFFFFF; --accent-soft:#D2ECE9;
+  --warn:#8A5200; --warn-soft:#FBEBCF; --shadow:rgba(15,23,26,.18);
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000; --surface:#0A0D0E; --surface-2:#13191B; --line:#243034;
+    --fg:#E7EEF0; --muted:#8C9DA5; --accent:#3FD0C0; --accent-fg:#00110F; --accent-soft:#0B2B28;
+    --warn:#F0B35A; --warn-soft:#2A1D08; --shadow:rgba(0,0,0,.8); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#0A0D0E; --surface-2:#13191B; --line:#243034;
+  --fg:#E7EEF0; --muted:#8C9DA5; --accent:#3FD0C0; --accent-fg:#00110F; --accent-soft:#0B2B28;
+  --warn:#F0B35A; --warn-soft:#2A1D08; --shadow:rgba(0,0,0,.8); color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:400 15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+button,select,input{font-family:inherit}
+.shell{max-width:1240px;margin:0 auto;padding-block:16px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{width:36px;height:36px;color:var(--accent);flex:none}
+.brand h1{font:800 23px/1.1 var(--f-display);margin:0;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.ctl{display:flex;flex-wrap:wrap;gap:10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:8px 13px;font:600 13px var(--f-body);cursor:pointer;min-height:36px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.tabs{display:none;margin-top:14px;gap:8px}
+.tabs button{flex:1;min-height:42px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:600 14px var(--f-body);border-radius:6px;cursor:pointer}
+.tabs button[aria-pressed="true"]{border-color:var(--accent);color:var(--fg);background:var(--accent-soft)}
+.main{display:grid;grid-template-columns:minmax(330px,440px) minmax(0,1fr);gap:30px;align-items:start;margin-top:18px}
+.main>*{min-width:0}
+@media (max-width:900px){
+  .main{grid-template-columns:minmax(0,1fr)}
+  .tabs{display:flex}
+  .shell[data-tab="build"] #sheetPane{display:none}
+  .shell[data-tab="sheet"] #buildPane{display:none}
+}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* form */
+.sec{padding:16px 0;border-bottom:1px solid var(--line)}
+.sec:first-child{padding-top:0}
+.sec>h2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px;font:600 12px var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.fld{display:grid;gap:6px;margin-bottom:12px}
+.fld>label,.lbl{font:600 13px var(--f-body)}
+.hint{color:var(--muted);font-size:12.5px;margin:0}
+.row{display:flex;gap:8px;align-items:center}
+.row>select,.row>input{flex:1;min-width:0}
+select,input[type=text],input[type=number]{width:100%;min-height:42px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);font:500 15px var(--f-body)}
+select.ed{min-height:52px;font:700 18px var(--f-display);border-color:var(--accent);border-width:2px}
+.dice,.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;font:600 14px var(--f-body);padding:0 14px}
+.dice{width:42px;padding:0;flex:none;color:var(--accent)}
+.dice.sm{width:34px;min-height:34px}
+.dice:hover,.btn:hover{background:var(--accent-soft)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn[disabled],.dice[disabled]{opacity:.45;cursor:not-allowed}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:6px 11px;border-radius:999px;font:500 13px var(--f-body);cursor:pointer;min-height:32px}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.chip.lock{border-style:dashed;color:var(--muted);cursor:default}
+.chip[disabled]:not(.lock){opacity:.4;cursor:not-allowed}
+.ab{display:grid;grid-template-columns:3rem minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:9px 0;border-top:1px dashed var(--line)}
+.ab .an{font:700 13px var(--f-mono);letter-spacing:.04em}
+.ab .ctrl{display:flex;gap:6px;align-items:center;min-width:0}
+.ab .ctrl input[type=number]{width:74px}
+.ab .ctrl select{width:84px}
+.step{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.step button{width:34px;height:34px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;font:700 17px var(--f-body);cursor:pointer}
+.step b{min-width:2ch;text-align:center;font:700 16px var(--f-mono)}
+.ab .tot{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.ab .tot b{font:800 25px var(--f-display)}
+.ab .tot i{font:600 13px var(--f-mono);font-style:normal;color:var(--accent)}
+.ab .sub{grid-column:2 / -1;color:var(--muted);font-size:12px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.ab .sub input{width:54px;min-height:28px;padding:2px 6px;font-size:13px}
+.pts{font:600 12px var(--f-mono);color:var(--accent);text-transform:none;letter-spacing:0}
+.warn{background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:8px 11px;font-size:13px;margin:0 0 8px}
+/* sheet */
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:22px}
+.sh-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 16px;border-bottom:2px solid var(--fg);padding-bottom:14px}
+.sh-head h2{margin:0;font:800 clamp(26px,5vw,38px)/1.05 var(--f-display);letter-spacing:-.015em;overflow-wrap:anywhere}
+.sh-head h2.ph{color:var(--muted)}
+.sh-sub{margin:6px 0 0;color:var(--muted);font-size:14px}
+.badge{align-self:flex-start;font:600 12px var(--f-mono);border:1px solid var(--accent);color:var(--accent);padding:4px 9px;border-radius:4px;white-space:nowrap}
+.sh-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.sh-body{display:grid;grid-template-columns:112px minmax(0,1fr);gap:20px;margin-top:16px}
+@media (max-width:640px){.sh-body{grid-template-columns:minmax(0,1fr)}}
+.abils{display:grid;grid-template-columns:1fr;gap:8px;align-content:start}
+@media (max-width:640px){.abils{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.abx{border:1px solid var(--line);border-radius:4px;text-align:center;padding:8px 4px 8px;background:var(--surface-2)}
+.abx .l{font:600 11px var(--f-mono);letter-spacing:.08em;color:var(--muted)}
+.abx .m{font:800 28px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.abx .s{display:inline-block;margin-top:2px;min-width:2.6em;padding:1px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font:600 12px var(--f-mono)}
+.abx .x{margin-top:4px;font-size:10.5px;line-height:1.3;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px}
+.tile{border:1px solid var(--line);border-radius:4px;padding:8px 10px;min-width:0}
+.tile .l{font:600 11px var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.tile .v{font:800 28px/1.15 var(--f-display);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tile .v.sm{font-size:20px}
+.tile .s{font-size:11.5px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin-top:18px}
+.cols>*{min-width:0}
+.blk h3{margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line);font:600 12px var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.kv{display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px dotted var(--line);font-size:14px;font-variant-numeric:tabular-nums}
+.kv .dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);flex:none}
+.kv .dot.on{background:var(--accent);border-color:var(--accent)}
+.kv .k{flex:1;min-width:0}
+.kv .k small{color:var(--muted);font:500 11px var(--f-mono);margin-left:4px}
+.kv .v{font:700 14px var(--f-mono)}
+.lst{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:14px}
+.lst li{padding-left:14px;position:relative}
+.lst li::before{content:"";position:absolute;left:2px;top:.62em;width:5px;height:5px;background:var(--accent);transform:rotate(45deg)}
+.lst li small{display:block;color:var(--muted);font-size:12.5px}
+.note{margin:14px 0 0;color:var(--muted);font-size:13px}
+.empty{color:var(--muted);font-size:14px}
+/* overlay */
+.ov{position:fixed;inset:0;z-index:20;background:var(--shadow);display:grid;place-items:center;padding:16px}
+.panel{width:min(560px,100%);max-height:86vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}
+.panel h2{margin:0 0 12px;font:800 20px var(--f-display)}
+.panel textarea{width:100%;min-height:240px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);font:500 13px/1.5 var(--f-mono);resize:vertical}
+.sv{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sv .t{flex:1;min-width:0}
+.sv .t b{display:block;overflow-wrap:anywhere}
+.sv .t span{color:var(--muted);font-size:12.5px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:6px;font:600 13px var(--f-body);max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* sheet pages */
+.pg{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.pg button{min-height:38px;padding:0 14px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:6px;font:600 13px var(--f-body);cursor:pointer}
+.pg button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.avatar{width:64px;height:64px;border-radius:8px;object-fit:cover;border:1px solid var(--line);flex:none}
+.sh-id{display:flex;gap:14px;align-items:center;min-width:0}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px;margin-top:14px}
+.info>div{min-width:0;border-bottom:1px solid var(--fg);padding-bottom:3px}
+.info .l{display:block;font:600 10.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.info .v{display:block;min-height:24px;font:600 15px var(--f-body);overflow-wrap:anywhere}
+.fi{width:100%;min-height:26px;padding:0;border:0;background:transparent;color:var(--fg);font:600 15px var(--f-body)}
+.fi:focus{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.p1{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;margin-top:16px;align-items:start}
+.p1>*{min-width:0}
+@media (max-width:640px){.p1{grid-template-columns:minmax(0,1fr)}}
+.lcol{display:grid;gap:12px}
+.rcol{display:grid;gap:12px}
+.pnl{border:1.5px solid var(--fg);border-radius:10px;padding:10px 12px;min-width:0}
+.pnl>h3{margin:0 0 8px;font:600 11px var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.pnl .kv:last-child{border-bottom:0}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.pill{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1.5px solid var(--fg);border-radius:999px;padding:6px 14px;font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase}
+.pill b{font:800 20px var(--f-display);letter-spacing:0}
+.pill input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
+.big{width:100%;border:0;background:transparent;color:var(--fg);font:800 30px/1.1 var(--f-display);font-variant-numeric:tabular-nums;padding:0}
+.big:focus{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.hps{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+.ta{display:block;width:100%;min-height:96px;padding:2px 0;border:0;background:transparent;color:var(--fg);font:400 15px/1.55 var(--f-body);resize:vertical}
+.ta:focus{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.ta.tall{min-height:260px}
+.ta.ln{line-height:1.8em;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(1.8em - 1px),var(--line) calc(1.8em - 1px),var(--line) 1.8em);background-attachment:local}
+.atk{display:grid;grid-template-columns:minmax(0,2fr) minmax(54px,.7fr) minmax(0,1.5fr);gap:6px;margin-bottom:6px}
+.atk input{min-height:34px;padding:4px 8px;font-size:14px}
+.atk .h{font:600 10.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.coins{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
+.coins label{display:grid;gap:2px;font:600 10.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
+.coins input{min-height:34px;padding:4px 2px;text-align:center;font-weight:700}
+.ds{display:flex;align-items:center;gap:6px;font:600 12px var(--f-body);margin:4px 0}
+.ds span{min-width:70px}
+.ds input{width:20px;height:20px;accent-color:var(--accent)}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.g2>*{min-width:0}
+.portrait{display:grid;gap:8px;justify-items:start;margin-bottom:10px}
+.portrait img{max-width:100%;max-height:340px;border-radius:8px;border:1px solid var(--line)}
+.ph-box{display:grid;place-items:center;width:100%;min-height:120px;border:1.5px dashed var(--line);border-radius:8px;color:var(--muted);font-size:13px}
+.spg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:12px}
+.spg>*{min-width:0}
+.sph{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sph .n{display:grid;place-items:center;min-width:34px;height:34px;padding:0 6px;border-radius:6px;background:var(--fg);color:var(--bg);font:800 17px var(--f-display)}
+.sph .t{flex:1;min-width:0;font:600 11px var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.sph label{display:grid;gap:1px;font:600 9.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sph input{width:56px;min-height:30px;padding:2px 4px;text-align:center;font-weight:700}
+.tiny{font-size:12px;color:var(--muted);margin:8px 0 0}
+.imp{display:grid;gap:10px}
+@media print{.top,.tabs,#buildPane,.sh-actions,.pg{display:none!important}.main{display:block}}
+.atk input,.coins input{border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+input.fi,input.big{border:0;background:transparent;padding:0;min-height:26px;width:100%;border-radius:0}
+input.fi{font:600 15px var(--f-body)}
+input.big{font:800 30px/1.1 var(--f-display)}
+.atk input.fi,.coins input.fi{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:4px 8px;min-height:34px;font:500 14px var(--f-body)}
+.coins input.fi{padding:4px 2px;text-align:center;font-weight:700}
+.foot{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="shell" id="shell" data-tab="build">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 20.5 7.4v9.2L12 21.5 3.5 16.6V7.4z"/><path d="M12 2.5 7.5 15.5h9zM3.5 7.4l4 8.1M20.5 7.4l-4 8.1M7.5 15.5 12 21.5l4.5-6"/></svg>
+      <div><h1 id="appName"></h1><p id="appTag"></p></div>
+    </div>
+    <div class="ctl">
+      <div class="seg" id="langSeg" role="group"><button type="button" data-lang="0" aria-pressed="true">TR</button><button type="button" data-lang="1" aria-pressed="false">EN</button></div>
+      <div class="seg" id="themeSeg" role="group"><button type="button" data-theme="light" aria-pressed="true"></button><button type="button" data-theme="dark" aria-pressed="false"></button></div>
+    </div>
+  </header>
+  <div class="tabs" id="tabs" role="group"><button type="button" data-tab="build" aria-pressed="true"></button><button type="button" data-tab="sheet" aria-pressed="false"></button></div>
+  <div class="main">
+    <section id="buildPane" aria-live="off"></section>
+    <section id="sheetPane"></section>
+  </div>
+</div>
+<footer class="foot" id="foot"></footer>
+<div class="ov" id="ov" hidden><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+<div id="toast" role="status" hidden></div>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s);};
+var esc=function(x){return String(x==null?'':x).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});};
+var ri=function(a,b){return a+Math.floor(Math.random()*(b-a+1));};
+var pick=function(a){return a[ri(0,a.length-1)];};
+var dn=function(n){return ri(1,n);};
+var shuf=function(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=ri(0,i);var t=a[i];a[i]=a[j];a[j]=t;}return a;};
+var cl=function(v,a,b){return Math.max(a,Math.min(b,v));};
+var sg=function(n){return n<0?'−'+(-n):'+'+n;};
+var dedupe=function(a){return a.filter(function(x,i){return a.indexOf(x)===i;});};
+var L=0;
+var nm=function(a){return a?a[L]:'';};
+var AB=['str','dex','con','int','wis','cha'];
+var ABN={str:['Güç','Strength'],dex:['Çeviklik','Dexterity'],con:['Dayanıklılık','Constitution'],int:['Zeka','Intelligence'],wis:['Bilgelik','Wisdom'],cha:['Karizma','Charisma']};
+var ABS={str:['GÜÇ','STR'],dex:['ÇEV','DEX'],con:['DAY','CON'],int:['ZEK','INT'],wis:['BİL','WIS'],cha:['KAR','CHA']};
+var DICE='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 20.5 7.4v9.2L12 21.5 3.5 16.6V7.4z"/><path d="M12 2.5 7.5 15.5h9zM3.5 7.4l4 8.1M20.5 7.4l-4 8.1M7.5 15.5 12 21.5l4.5-6"/></svg>';
+
+var UI={
+app:['Karakter Atölyesi','Character Workshop'],
+tag:['D&D karakter sheet oluşturucu','D&D character sheet builder'],
+light:['Aydınlık','Light'],dark:['OLED karanlık','OLED dark'],
+tabBuild:['Oluştur','Build'],tabSheet:['Karakter sheet','Character sheet'],
+edition:['D&D sürümü','D&D edition'],
+edHint:['Sürümü seçin; form ve sheet o sürümün kurallarına göre değişir.','Pick an edition; the form and sheet follow its rules.'],
+randAll:['Rastgele karakter','Random character'],random:['Rastgele','Random'],
+identity:['Kimlik','Identity'],name:['Karakter adı','Character name'],namePh:['İsim yazın ya da zar atın','Type a name or roll one'],
+level:['Seviye','Level'],lvFixed:['Bu sürümde karakter 1. seviyeden başlar.','Characters start at level 1 in this edition.'],
+align:['Hizalanma','Alignment'],race:['Irk','Race'],species:['Tür','Species'],sub:['Alt ırk','Subrace'],
+rbonus:['Irk yetenek bonusu','Racial ability bonus'],pickN:['{n} tane seçin','Choose {n}'],
+cls:['Sınıf','Class'],bg:['Geçmiş','Background'],bgAsi:['Geçmiş yetenek artışı','Background ability increase'],
+bgMode21:['+2 ve +1','+2 and +1'],bgMode111:['+1 / +1 / +1','+1 / +1 / +1'],plus2:['+2 olacak','+2 to'],plus1:['+1 olacak','+1 to'],
+abilities:['Yetenek puanları','Ability scores'],method:['Yöntem','Method'],
+m_roll3:['3d6 (sırayla)','3d6 in order'],m_roll4:['4d6, en düşüğü at','4d6 drop lowest'],m_array:['Standart dizi','Standard array'],m_buy:['Puan satın alma','Point buy'],m_manual:['Elle gir','Enter manually'],
+left:['kalan','left'],suggest:['Sınıfa göre dağıt','Auto-assign for class'],rollAll:['Hepsini at','Roll all'],
+extra:['Ek','Extra'],extraT:['Seviye artışı, eşya vb. ek bonus','Level-ups, items, other bonus'],
+race2:['ırk','race'],bg2:['geçmiş','bg'],
+skills:['Beceriler','Skills'],clsSkills:['Sınıf becerileri','Class skills'],raceSkills:['Ek beceriler','Extra skills'],
+fromBg:['Geçmiş/ırk','Background/race'],
+hp:['Can puanı','Hit points'],hpMode:['Can yöntemi','HP method'],hpFixed:['Sabit (1. seviye maks.)','Fixed (max at level 1)'],hpRoll:['Zarla','Rolled'],hpReroll:['Yeniden at','Reroll'],
+save:['Kaydet','Save'],saved:['Kayıtlılar','Saved'],copy:['Metin olarak kopyala','Copy as text'],
+savedTitle:['Kayıtlı karakterler','Saved characters'],none:['Henüz kayıtlı karakter yok.','No saved characters yet.'],
+load:['Yükle','Load'],del:['Sil','Delete'],close:['Kapat','Close'],selAll:['Tümünü seç','Select all'],copyBtn:['Panoya kopyala','Copy to clipboard'],
+tSaved:['Karakter kaydedildi','Character saved'],tLoaded:['Karakter yüklendi','Character loaded'],tDel:['Silindi','Deleted'],tCopied:['Kopyalandı','Copied'],tSel:['Metin seçildi, kopyalayabilirsiniz','Text selected, you can copy it'],
+unnamed:['Adsız Kahraman','Unnamed Hero'],
+lvl:['Seviye','Level'],
+warnReq:['Sınıf gereksinimi karşılanmıyor','Class requirement not met'],warnSk:['Beceri seçimi eksik','Skill choices incomplete'],
+slots:['Büyü yuvaları','Spell slots'],spell:['Büyücülük','Spellcasting'],
+equip:['Önerilen başlangıç ekipmanı','Suggested starting equipment'],
+feat:['Seviye 1 özellikleri','Level 1 features'],racial:['Irk özellikleri','Racial traits'],bgT:['Geçmiş','Background'],
+saves:['Kurtarma atışları','Saving throws'],skillsT:['Beceriler','Skills'],
+notes:['Notlar','Notes']
+};
+var u=function(k){var v=UI[k];return v?v[L]:k;};
+
+var AL={LG:['Yasal İyi','Lawful Good'],NG:['Tarafsız İyi','Neutral Good'],CG:['Kaotik İyi','Chaotic Good'],LN:['Yasal Tarafsız','Lawful Neutral'],N:['Gerçek Tarafsız','True Neutral'],CN:['Kaotik Tarafsız','Chaotic Neutral'],LE:['Yasal Kötü','Lawful Evil'],NE:['Tarafsız Kötü','Neutral Evil'],CE:['Kaotik Kötü','Chaotic Evil'],L:['Yasal','Lawful'],Ne:['Tarafsız','Neutral'],C:['Kaotik','Chaotic'],G:['İyi','Good'],E:['Kötü','Evil'],U:['Hizasız','Unaligned']};
+var A9=['LG','NG','CG','LN','N','CN','LE','NE','CE'];
+
+var NMS={
+human:{p:['Al','Bran','Cor','Dar','Ed','Fen','Gar','Hal','Ira','Jor','Kel','Lor','Mar','Nor','Per','Sel','Tor','Val'],m:['a','e','i','o','ar','en'],e:['dric','wyn','ric','ia','ana','ard','ena','is','mund','el']},
+dwarf:{p:['Bar','Dur','Gim','Thor','Bor','Dra','Kil','Mor','Nor','Rur','Tho','Ul'],m:['in','ar','or','ur'],e:['din','grim','li','rik','dak','bur','gar','nar','vek']},
+elf:{p:['Ae','Cal','Eil','Fae','Ili','Lae','Mir','Nae','Sil','Tha','Vael','Yl'],m:['an','el','ia','ri','th'],e:['dor','riel','wen','thil','nor','las','iel','ial','ion']},
+halfling:{p:['Bil','Cor','Dill','Eld','Fin','Mer','Per','Pip','Rose','Sam','Tob','Wil'],m:['bo','li','ry','dy'],e:['bo','wise','lo','la','by','rin','win','mac']},
+orc:{p:['Gro','Kur','Mog','Ug','Zug','Thok','Dru','Gor','Ruk','Shag'],m:['k','g','ul','ra'],e:['gash','nak','mar','dush','rok','zog','ag','uk']},
+infernal:{p:['Aka','Dam','Ere','Mal','Nem','Ori','Rai','Zar','Kal','Mor'],m:['ak','ia','ar','ek'],e:['us','ius','ith','ix','eth','ea','os','ara']},
+draconic:{p:['Ar','Bal','Dra','Ghes','Ka','Med','Nar','Sho','Tor','Rhog'],m:['a','i','ar','or'],e:['jhan','ash','rax','kor','ghar','thar','mesh','tan']},
+gnome:{p:['Bim','Fiz','Gim','Jeb','Nim','Oz','Pock','Quil','Wren','Zook','Zan','Dim'],m:['ble','wi','zy','po'],e:['bles','kin','wick','ver','fizz','nip','gle','ton']}
+};
+var SUR={
+human:[['Ash','Wolf','Storm','Raven','Oak','Stone','Thorn'],['wood','ward','field','bane','ford','crest','hollow']],
+dwarf:[['Iron','Stone','Deep','Gold','Bronze','Black','Coal'],['fist','beard','hammer','forge','helm','vein','shield']],
+elf:[['Silver','Moon','Star','Dawn','Night','Leaf','Mist'],['whisper','song','blade','shade','bloom','glade','wind']],
+halfling:[['Tea','Green','Under','Good','Tall','Brush','Thistle'],['bottle','hill','barrel','foot','gather','wick','down']]
+};
+function genName(fl){
+  var f=NMS[fl]||NMS.human;
+  var n=pick(f.p)+(Math.random()<0.35?pick(f.m):'')+pick(f.e);
+  n=n.charAt(0).toUpperCase()+n.slice(1);
+  var s=SUR[fl];
+  if(s&&Math.random()<0.8){var a=pick(s[0]),b=pick(s[1]);n+=' '+a+b;}
+  return n;
+}
+var SLOTS_FULL=[null,[2],[3],[4,2],[4,3],[4,3,2],[4,3,3],[4,3,3,1],[4,3,3,2],[4,3,3,3,1],[4,3,3,3,2],[4,3,3,3,2,1],[4,3,3,3,2,1],[4,3,3,3,2,1,1],[4,3,3,3,2,1,1],[4,3,3,3,2,1,1,1],[4,3,3,3,2,1,1,1],[4,3,3,3,2,1,1,1,1],[4,3,3,3,3,1,1,1,1],[4,3,3,3,3,2,1,1,1],[4,3,3,3,3,2,2,1,1]];
+var COST={8:0,9:1,10:2,11:3,12:4,13:5,14:6,15:8,16:10,17:13,18:16};
+var COST5={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+
+var ED={};
+var BASEKIT=[['Sırt çantası, su matarası, 6 meşale','Backpack, waterskin, 6 torches'],['Kav çakmağı, 50\' ip, 1 haftalık erzak','Tinder box, 50\' rope, 1 week of rations']];
+var SV_BX=[['Ölüm Işını / Zehir','Death Ray or Poison'],['Sihirli Değnekler','Magic Wands'],['Felç / Taşlaşma','Paralysis or Turn to Stone'],['Ejderha Nefesi','Dragon Breath'],['Asa, Çubuk, Büyü','Rods, Staves, Spells']];
+var BXC=[
+{id:'cleric',n:['Rahip','Cleric'],hd:6,sv:[11,12,14,16,15],pri:['wis','con','str'],pr:['wis'],req:{},
+ d:['Zırh giyen, ölümsüzleri kovan şifacı. Büyüleri 2. seviyede başlar.','Armored healer who turns undead. Spells start at level 2.'],
+ f:[['Ölümsüzleri Kov','Turn Undead'],['Sadece ezici silahlar (gürz, çomak vb.)','Blunt weapons only (mace, club, etc.)'],['Her tür zırh ve kalkan','Any armor and shield']],
+ eq:[['Gürz','Mace'],['Zincir zırh ve kalkan','Chain mail and shield'],['Kutsal sembol','Holy symbol']]},
+{id:'fighter',n:['Savaşçı','Fighter'],hd:8,sv:[12,13,14,15,16],pri:['str','con','dex'],pr:['str'],req:{},
+ d:['Her silah ve zırhı kullanabilen dayanıklı dövüşçü.','Sturdy fighter who can use any weapon and armor.'],
+ f:[['Her silah ve zırh','Any weapon and armor'],['Yüksek can zarı','Best hit dice of the human classes']],
+ eq:[['Kılıç','Sword'],['Zincir zırh ve kalkan','Chain mail and shield'],['Yay ve 20 ok','Bow and 20 arrows']]},
+{id:'mu',n:['Büyücü','Magic-User'],hd:4,sv:[13,14,13,16,15],pri:['int','con','dex'],pr:['int'],req:{},
+ d:['Büyü kitabı taşıyan kırılgan ama güçlü büyücü.','Fragile but powerful caster with a spellbook.'],
+ f:[['Büyü kitabı: 1. seviye 1 büyü','Spellbook: one 1st-level spell'],['Sadece hançer ve asa','Dagger and staff only'],['Zırh giyemez','No armor']],
+ eq:[['Hançer','Dagger'],['Büyü kitabı','Spellbook']]},
+{id:'thief',n:['Hırsız','Thief'],hd:4,sv:[13,14,13,16,15],pri:['dex','con','int'],pr:['dex'],req:{},
+ d:['Kilit açan, tuzak bulan, gölgelerde gezen.','Picks locks, finds traps, moves through shadows.'],
+ f:[['Hırsız becerileri','Thief skills'],['Sadece deri zırh, kalkan yok','Leather armor only, no shield'],['Arkadan vuruş (+4 vuruş, çift hasar)','Backstab (+4 to hit, double damage)']],
+ eq:[['Kısa kılıç','Short sword'],['Deri zırh','Leather armor'],['Hırsız aletleri','Thieves\' tools']]},
+{id:'dwarf',n:['Cüce','Dwarf'],hd:8,sv:[8,9,10,13,12],pri:['str','con','wis'],pr:['str'],req:{con:9},fl:'dwarf',
+ d:['Sert, dayanıklı cüce dövüşçü. Büyülere karşı dirençli.','Tough dwarven fighter with strong resistances.'],
+ f:[['Kızılötesi görüş 60\'','Infravision 60\''],['Yapı tuzaklarını ve eğimleri sezer','Detects traps, slopes and new construction'],['Her silah ve zırh (büyük silahlar hariç)','Armor and most weapons']],
+ eq:[['Savaş baltası','Battle axe'],['Zincir zırh ve kalkan','Chain mail and shield']]},
+{id:'elf',n:['Elf','Elf'],hd:6,sv:[12,13,13,15,15],pri:['int','str','con'],pr:['str','int'],req:{int:9},fl:'elf',
+ d:['Hem kılıç hem büyü kullanan zarif savaşçı-büyücü.','Graceful fighter-mage who uses sword and spell alike.'],
+ f:[['Kızılötesi görüş 60\'','Infravision 60\''],['Gizli kapıları bulur (2/6)','Detects secret doors (2 in 6)'],['Gul felcine bağışık','Immune to ghoul paralysis'],['Büyü: 1. seviye 1 yuva','Spells: one 1st-level slot']],
+ eq:[['Kılıç ve yay','Sword and bow'],['Zincir zırh','Chain mail'],['Büyü kitabı','Spellbook']]},
+{id:'halfling',n:['Cüce Boylu (Halfling)','Halfling'],hd:6,sv:[8,9,10,13,12],pri:['dex','str','con'],pr:['dex','str'],req:{con:9,dex:9},fl:'halfling',
+ d:['Küçük, çevik ve şanslı; gizlenmede ustadır.','Small, nimble and lucky; a master at hiding.'],
+ f:[['Gizlenme (ormanda %90, kapalı yerde %33)','Hide (90% outdoors, 33% indoors)'],['Fırlatma silahlarında +1 vuruş','+1 to missile attacks'],['Büyük yaratıklara karşı AC -2','AC bonus of 2 vs large foes']],
+ eq:[['Kısa kılıç ve sapan','Short sword and sling'],['Deri zırh','Leather armor']]}
+];
+function mxB(s){return s<=3?-3:s<=5?-2:s<=8?-1:s<=12?0:s<=15?1:s<=17?2:3;}
+ED.bx={id:'bx',n:['Basic/Expert (B/X) · 1981','Basic/Expert (B/X) · 1981'],lv:[1,1],al:['L','Ne','C'],kind:'bx',
+ blurb:['Moldvay/Cook kuralları. Irk ve sınıf birleşiktir; yetenekler 3d6 ile sırayla atılır.','Moldvay/Cook rules. Race is a class; abilities are rolled 3d6 in order.'],
+ methods:['roll3','manual'],defMethod:'roll3',hp:{mode:'roll',firstMax:false},classes:BXC,modShow:true,
+ clsLabel:['Sınıf (ırk dahil)','Class (race included)']};
+
+/* ---------- AD&D 2e ---------- */
+var G2={war:{th:'war',sv:[14,16,15,17,17],wp:4,np:3,pen:-2,gp:[5,4,10]},pri:{th:'pri',sv:[10,14,13,16,15],wp:2,np:4,pen:-3,gp:[3,6,10]},rog:{th:'rog',sv:[13,14,12,16,15],wp:2,np:3,pen:-3,gp:[2,6,10]},wiz:{th:'wiz',sv:[14,11,13,15,12],wp:1,np:4,pen:-5,gp:[1,4,10]}};
+var SV_2E=[['Felç / Zehir / Ölüm','Paralyzation, Poison, Death'],['Çubuk / Asa / Değnek','Rod, Staff, Wand'],['Taşlaşma / Dönüşüm','Petrification, Polymorph'],['Nefes Silahı','Breath Weapon'],['Büyü','Spell']];
+var C2=[
+{id:'fighter',n:['Savaşçı','Fighter'],hd:10,g:'war',pri:['str','con','dex'],req:{str:9},
+ d:['Silah ve zırhta uzman; ustalaşma ile ek vuruş ve hasar kazanır.','Weapon and armor expert; can specialize for extra hit and damage.'],
+ f:[['Silah uzmanlığı','Weapon specialization'],['Üstün Güç (18/xx) ve Con can bonusu','Exceptional Strength and extra Con HP bonus']],
+ eq:[['Uzun kılıç','Long sword'],['Zincir zırh ve kalkan','Chain mail and shield'],['Yay ve 20 ok','Bow and 20 arrows']],gp:[5,4,10]},
+{id:'paladin',n:['Paladin','Paladin'],hd:10,g:'war',pri:['str','cha','wis'],req:{str:12,con:9,wis:13,cha:17},al:['LG'],
+ d:['Yasal iyi hizalı kutsal şövalye.','Lawful good holy knight.'],
+ f:[['Kötülüğü sez','Detect evil'],['İlahi sağlık (hastalık bağışıklığı)','Divine health'],['Şifa eli','Lay on hands'],['Korku bağışıklığı çevresi','Protection from evil aura']],
+ eq:[['Uzun kılıç','Long sword'],['Plaka zırh (mümkünse)','Plate armor if affordable'],['Kutsal sembol','Holy symbol']],gp:[5,4,10]},
+{id:'ranger',n:['Korucu','Ranger'],hd:10,g:'war',pri:['dex','str','con'],req:{str:13,dex:13,con:14,wis:14},al:['LG','NG','CG'],
+ d:['İz süren, iki silahla dövüşen iyi hizalı avcı.','Good-aligned tracker who fights with two weapons.'],
+ f:[['İz sürme','Tracking'],['İki silahla dövüş','Two-weapon fighting'],['Favori düşman','Favored enemies']],
+ eq:[['Uzun yay','Long bow'],['Deri zırh','Leather armor'],['İki kısa kılıç','Two short swords']],gp:[5,4,10]},
+{id:'mage',n:['Büyücü','Mage'],hd:4,g:'wiz',pri:['int','dex','con'],req:{int:9},
+ d:['Büyü kitabıyla çalışan akademik büyücü.','Scholarly caster with a spellbook.'],
+ f:[['Büyü kitabı: Read Magic + 3 büyü','Spellbook: Read Magic + 3 spells'],['Günde 1 büyü (1. seviye)','1 spell per day at level 1'],['Zırh giyemez','No armor']],
+ eq:[['Hançer','Dagger'],['Büyü kitabı','Spellbook'],['Bileşen kesesi','Component pouch']],gp:[1,4,10,1]},
+{id:'cleric',n:['Rahip','Cleric'],hd:8,g:'pri',pri:['wis','con','str'],req:{wis:9},
+ d:['Tanrısına hizmet eden, ölümsüzleri kovan şifacı.','Servant of a deity who heals and turns undead.'],
+ f:[['Ölümsüzleri kov','Turn undead'],['Büyü alanlarına erişim','Access to spheres of magic'],['Ezici silahlar','Blunt weapons only']],
+ eq:[['Gürz','Mace'],['Zincir zırh ve kalkan','Chain mail and shield'],['Kutsal sembol','Holy symbol']],gp:[3,6,10]},
+{id:'druid',n:['Druid','Druid'],hd:8,g:'pri',pri:['wis','cha','con'],req:{wis:12,cha:15},al:['N'],
+ d:['Doğayı koruyan, gerçek tarafsız bilge.','True-neutral guardian of nature.'],
+ f:[['Druid gizli dili','Druidic secret language'],['Orman ve doğa büyüleri','Plant and animal spheres'],['Doğa bilgisi','Woodland lore']],
+ eq:[['Orak','Sickle'],['Deri zırh','Leather armor'],['Imak ve taşlar','Sling and stones']],gp:[3,6,10]},
+{id:'thief',n:['Hırsız','Thief'],hd:6,g:'rog',pri:['dex','int','con'],req:{dex:9},
+ d:['Gizlilik ve el becerisi uzmanı.','Expert in stealth and sleight of hand.'],
+ f:[['Hırsız becerileri (60 serbest puan)','Thief skills (60 discretionary points)'],['Arkadan vuruş (x2)','Backstab (x2)'],['Deri zırh','Leather armor only']],
+ eq:[['Kısa kılıç','Short sword'],['Deri zırh','Leather armor'],['Hırsız aletleri','Thieves\' tools']],gp:[2,6,10]},
+{id:'bard',n:['Ozan','Bard'],hd:6,g:'rog',pri:['cha','dex','int'],req:{dex:12,int:13,cha:15},al:['LN','NG','N','CN','NE'],
+ d:['Şarkı, hikâye ve hafif büyü ile destek veren gezgin.','Wandering performer who supports with song, lore and light magic.'],
+ f:[['Şiir ve müzik','Poetry and music'],['Hırsız becerilerinin bir kısmı','Some thief skills'],['Büyü: 2. seviyeden','Spells from level 2']],
+ eq:[['Kılıç','Sword'],['Deri zırh','Leather armor'],['Müzik aleti','Musical instrument']],gp:[2,6,10]}
+];
+var R2=[
+{id:'human',n:['İnsan','Human'],fl:'human',mods:{},cls:null,spd:12,tr:[['Seviye sınırı yok','No level limits'],['İkinci sınıfa geçiş (dual-class)','Dual-class option']]},
+{id:'dwarf',n:['Cüce','Dwarf'],fl:'dwarf',mods:{con:1,cha:-1},cls:['fighter','cleric','thief'],spd:6,sb:{ppd:1,rsw:1,sp:1},tr:[['Kızılötesi görüş 60\'','Infravision 60\''],['Büyü ve zehire karşı kurtarma bonusu','Saving throw bonus vs magic and poison'],['Taş işçiliği sezgisi','Stonework sense']]},
+{id:'elf',n:['Elf','Elf'],fl:'elf',mods:{dex:1,con:-1},cls:['fighter','ranger','mage','cleric','thief'],spd:12,tr:[['Kızılötesi görüş 60\'','Infravision 60\''],['Uyku ve büyülenmeye %90 direnç','90% resistance to sleep and charm'],['Yay, kısa ve uzun kılıçta +1 vuruş','+1 to hit with bows and swords'],['Gizli kapıları fark eder','Notices secret doors']]},
+{id:'gnome',n:['Gnom','Gnome'],fl:'gnome',mods:{int:1,wis:-1},cls:['fighter','cleric','thief','mage'],spd:6,sb:{rsw:1,sp:1},tr:[['Kızılötesi görüş 60\'','Infravision 60\''],['Büyüye karşı kurtarma bonusu','Saving throw bonus vs magic'],['Yer altı bilgisi','Underground lore']]},
+{id:'halfelf',n:['Yarı Elf','Half-Elf'],fl:'elf',mods:{},cls:['fighter','ranger','mage','cleric','druid','thief','bard'],spd:12,tr:[['Kızılötesi görüş 30\'','Infravision 30\''],['Uyku ve büyülenmeye %30 direnç','30% resistance to sleep and charm']]},
+{id:'halfling',n:['Cüce Boylu (Halfling)','Halfling'],fl:'halfling',mods:{dex:1,str:-1},cls:['fighter','thief','cleric'],spd:6,sb:{ppd:1,rsw:1,sp:1},tr:[['Büyü ve zehire karşı kurtarma bonusu','Saving throw bonus vs magic and poison'],['Sapanda +1 vuruş','+1 to hit with slings'],['Ormanda gizlenme','Hide in woodland']]}
+];
+var T2={
+str:function(s){var t={3:[-3,-1],4:[-2,-1],5:[-2,-1],6:[-1,0],7:[-1,0],16:[0,1],17:[1,1],18:[1,2]};return t[s]||[0,0];},
+dex:function(s){var t={3:[-3,-3,4],4:[-2,-2,3],5:[-1,-1,2],6:[0,0,1],15:[0,0,-1],16:[1,1,-2],17:[2,2,-3],18:[2,2,-4]};return t[s]||[0,0,0];}
+};
+ED['2e']={id:'2e',n:['AD&D 2. Baskı · 1989','AD&D 2nd Edition · 1989'],lv:[1,1],al:A9,kind:'2e',
+ blurb:['THAC0, azalan AC ve yaş/ırk sınırları. Irka göre izinli sınıflar listelenir.','THAC0, descending AC. The class list follows the chosen race.'],
+ methods:['roll3','roll4','manual'],defMethod:'roll4',hp:{mode:'roll',firstMax:false},races:R2,classes:C2,modShow:false};
+
+/* ---------- D&D 3.5 ---------- */
+var S35=[
+['appraise','int','Değer Biçme','Appraise'],['balance','dex','Denge','Balance'],['bluff','cha','Blöf','Bluff'],['climb','str','Tırmanma','Climb'],
+['concentration','con','Konsantrasyon','Concentration'],['diplomacy','cha','Diplomasi','Diplomacy'],['disabledevice','int','Tuzak Etkisizleştirme','Disable Device'],
+['disguise','cha','Kılık Değiştirme','Disguise'],['escape','dex','Kurtulma','Escape Artist'],['handleanimal','cha','Hayvan Eğitme','Handle Animal'],
+['heal','wis','Şifa','Heal'],['hide','dex','Gizlenme','Hide'],['intimidate','cha','Gözdağı','Intimidate'],['jump','str','Zıplama','Jump'],
+['karcana','int','Bilgi (Gizem)','Knowledge (Arcana)'],['kdungeon','int','Bilgi (Zindan)','Knowledge (Dungeoneering)'],['knature','int','Bilgi (Doğa)','Knowledge (Nature)'],
+['kreligion','int','Bilgi (Din)','Knowledge (Religion)'],['listen','wis','Dinleme','Listen'],['movesilently','dex','Sessiz Hareket','Move Silently'],
+['openlock','dex','Kilit Açma','Open Lock'],['perform','cha','Gösteri','Perform'],['ride','dex','Binicilik','Ride'],['search','int','Arama','Search'],
+['sensemotive','wis','Sezgi','Sense Motive'],['sleight','dex','El Çabukluğu','Sleight of Hand'],['spellcraft','int','Büyü Bilgisi','Spellcraft'],
+['spot','wis','Fark Etme','Spot'],['survival','wis','Hayatta Kalma','Survival'],['swim','str','Yüzme','Swim'],['tumble','dex','Takla','Tumble'],
+['umd','cha','Sihirli Eşya Kullanma','Use Magic Device'],['userope','dex','İp Kullanma','Use Rope']
+];
+var KALL=['karcana','kdungeon','knature','kreligion'];
+var F35=[
+['Alertness','Tetik Duruş','Dinleme ve Fark Etme +2','+2 Listen and Spot'],['Combat Reflexes','Savaş Refleksleri','Fazladan fırsat saldırıları','Extra attacks of opportunity'],['Dodge','Kaçınma','Bir düşmana karşı AC +1','+1 AC against one foe'],
+['Improved Initiative','Gelişmiş Girişim','Girişim +4','+4 initiative'],['Iron Will','Demir İrade','Will kurtarma +2','+2 Will saves'],['Great Fortitude','Büyük Dayanıklılık','Fort kurtarma +2','+2 Fort saves'],
+['Lightning Reflexes','Şimşek Refleksi','Ref kurtarma +2','+2 Ref saves'],['Power Attack','Güçlü Saldırı','Vuruştan hasara takas','Trade attack bonus for damage'],['Point Blank Shot','Yakın Atış','Yakında +1 vuruş ve hasar','+1 attack and damage at close range'],
+['Weapon Focus','Silah Odağı','Seçili silahla +1 vuruş','+1 attack with a chosen weapon'],['Toughness','Sağlamlık','+3 can','+3 hit points'],['Run','Koşu','Hız x5','Speed x5 when running'],['Skill Focus','Beceri Odağı','Seçili beceri +3','+3 to a chosen skill'],
+['Combat Casting','Savaşta Büyü','Konsantrasyon +4 (savunmada)','+4 Concentration when casting defensively'],['Spell Focus','Büyü Odağı','Bir okulda DC +1','+1 DC for one school'],['Martial Weapon Proficiency','Askeri Silah Ustalığı','Askeri silahlar','Martial weapons'],
+['Two-Weapon Fighting','İki Silahla Dövüş','Ceza azalır','Reduced two-weapon penalties'],['Mounted Combat','Atlı Savaş','Binek koruması','Protect your mount'],['Stealthy','Sinsi','Gizlenme ve Sessiz Hareket +2','+2 Hide and Move Silently'],['Negotiator','Müzakereci','Diplomasi ve Sezgi +2','+2 Diplomacy and Sense Motive']
+];
+var K35=[['barbarian','Barbar','Barbarian',12,4,'f',[1,0,0],['climb','handleanimal','intimidate','jump','listen','ride','survival','swim'],['str','con','dex'],'',
+ ['Hızlı hareket (+10 ft)','Öfke (günde 1)','Basit ve askeri silahlar, orta zırh'],['Fast movement (+10 ft)','Rage 1/day','Simple and martial weapons, medium armor'],['CN','CG','N','CE','NE','CN','LN','NG','LG'].slice(0,0)],
+['bard','Ozan','Bard',6,6,'m',[0,1,1],['appraise','balance','bluff','climb','concentration','diplomacy','disguise','escape','jump','listen','movesilently','perform','sensemotive','sleight','spellcraft','swim','tumble','umd','kdungeon','karcana','knature','kreligion'],['cha','dex','con'],'cha'],
+['cleric','Rahip','Cleric',8,2,'m',[1,0,1],['concentration','diplomacy','heal','karcana','kreligion','spellcraft'],['wis','con','str'],'wis'],
+['druid','Druid','Druid',8,4,'m',[1,0,1],['concentration','diplomacy','handleanimal','heal','knature','listen','ride','spellcraft','spot','survival','swim'],['wis','con','dex'],'wis'],
+['fighter','Savaşçı','Fighter',10,2,'f',[1,0,0],['climb','handleanimal','intimidate','jump','ride','swim'],['str','con','dex'],''],
+['monk','Keşiş','Monk',8,4,'m',[1,1,1],['balance','climb','concentration','diplomacy','escape','hide','jump','kreligion','karcana','listen','movesilently','perform','sensemotive','spot','swim','tumble'],['wis','dex','str'],''],
+['paladin','Paladin','Paladin',10,2,'f',[1,0,1],['concentration','diplomacy','handleanimal','heal','kreligion','ride','sensemotive'],['str','cha','con'],'cha'],
+['ranger','Korucu','Ranger',8,6,'f',[1,1,0],['climb','concentration','handleanimal','heal','hide','jump','kdungeon','knature','listen','movesilently','ride','search','spot','survival','swim','userope'],['dex','str','wis'],'wis'],
+['rogue','Düzenbaz (Rogue)','Rogue',6,8,'m',[0,1,0],['appraise','balance','bluff','climb','diplomacy','disabledevice','disguise','escape','hide','intimidate','jump','listen','movesilently','openlock','perform','search','sensemotive','sleight','spot','swim','tumble','umd','userope'],['dex','int','con'],''],
+['sorcerer','Büyücü (Sorcerer)','Sorcerer',4,2,'h',[0,0,1],['bluff','concentration','karcana','spellcraft'],['cha','con','dex'],'cha'],
+['wizard','Sihirbaz','Wizard',4,2,'h',[0,0,1],['concentration','karcana','kdungeon','knature','kreligion','spellcraft'],['int','con','dex'],'int']];
+var D35={
+barbarian:['Öfke, hızlı hareket, orta zırh','Rage, fast movement, medium armor'],bard:['Bardik müzik, bilgi, büyüler','Bardic music, lore, spells'],
+cleric:['İlahi büyüler, ölümsüz kovma, alan seçimi','Divine spells, turn undead, domains'],druid:['Doğa büyüleri, hayvan yoldaşı','Nature spells, animal companion'],
+fighter:['En çok ek feat; tüm silah ve zırhlar','Most bonus feats; all weapons and armor'],monk:['Silahsız dövüş, Tumble, üstün savunma','Unarmed combat, evasion, high AC'],
+paladin:['Kötülüğe vuruş, şifa eli, ilahi lütuf','Smite evil, lay on hands, divine grace'],ranger:['Favori düşman, iz sürme, iki silah','Favored enemy, tracking, two-weapon style'],
+rogue:['Gizli saldırı (+1d6), tuzak bulma','Sneak attack +1d6, trapfinding'],sorcerer:['Doğuştan büyücü; daha az büyü, daha çok yuva','Spontaneous caster, bigger slot pool'],
+wizard:['Büyü kitabı, bonus feat, ruh çağırma','Spellbook, bonus feat, familiar']};
+var C35=K35.map(function(k){return {id:k[0],n:[k[1],k[2]],hd:k[3],sp:k[4],bab:k[5],sv:k[6],cs:k[7],pri:k[8],sa:k[9],
+ d:D35[k[0]],al:k[0]==='paladin'?['LG']:k[0]==='monk'?['LG','LN','LE']:k[0]==='barbarian'?['NG','CG','N','CN','NE','CE']:k[0]==='bard'?['NG','CG','N','CN','NE','CE']:k[0]==='druid'?['LN','NG','N','CN','NE'].concat(['LG','CG','LE','CE'].slice(0,0)):null};});
+var R35=[
+{id:'human',n:['İnsan','Human'],fl:'human',mods:{},spd:30,size:0,tr:[['1 ek feat','1 bonus feat'],['İlk seviyede +4 beceri puanı (sonra +1/seviye)','+4 skill points at 1st level (+1 per level)']],feat:1,sp:1},
+{id:'dwarf',n:['Cüce','Dwarf'],fl:'dwarf',mods:{con:2,cha:-2},spd:20,size:0,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Taş işçiliği sezgisi','Stonecunning'],['Zehire +2 kurtarma','+2 save vs poison']]},
+{id:'elf',n:['Elf','Elf'],fl:'elf',mods:{dex:2,con:-2},spd:30,size:0,tr:[['Düşük ışık görüşü','Low-light vision'],['Uykuya bağışık','Immune to sleep'],['Dinleme, Arama, Fark Etme +2','+2 Listen, Search, Spot']]},
+{id:'gnome',n:['Gnom','Gnome'],fl:'gnome',mods:{con:2,str:-2},spd:20,size:1,tr:[['Küçük boy (AC +1)','Small size (AC +1)'],['Düşük ışık görüşü','Low-light vision'],['İllüzyonlara +2 kurtarma','+2 save vs illusions']]},
+{id:'halfelf',n:['Yarı Elf','Half-Elf'],fl:'elf',mods:{},spd:30,size:0,tr:[['Düşük ışık görüşü','Low-light vision'],['Uyku bağışıklığı','Immune to sleep'],['Diplomasi ve Bilgi Toplama +2','+2 Diplomacy']]},
+{id:'halforc',n:['Yarı Ork','Half-Orc'],fl:'orc',mods:{str:2,int:-2,cha:-2},spd:30,size:0,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Ork kanı','Orc blood']]},
+{id:'halfling',n:['Cüce Boylu (Halfling)','Halfling'],fl:'halfling',mods:{dex:2,str:-2},spd:20,size:1,tr:[['Küçük boy (AC +1)','Small size (AC +1)'],['Tüm kurtarmalara +1','+1 on all saves'],['Tırmanma, Zıplama, Sessiz Hareket +2','+2 Climb, Jump, Move Silently']]}
+];
+ED['3.5']={id:'3.5',n:['D&D 3.5 · 2003','D&D 3.5 · 2003'],lv:[1,20],al:A9,kind:'3.5',
+ blurb:['d20 sistemi: beceri puanları, feat\'ler ve BAB. Seviye 1–20.','d20 System: skill ranks, feats and BAB. Levels 1–20.'],
+ methods:['roll4','buy','array','manual'],defMethod:'buy',buyPts:28,hp:{mode:'fixed',firstMax:true},races:R35,classes:C35,modShow:true,
+ skills:S35,feats:F35};
+
+/* ---------- 4e ---------- */
+var S4=[['acrobatics','dex','Akrobasi','Acrobatics'],['arcana','int','Gizem','Arcana'],['athletics','str','Atletizm','Athletics'],['bluff','cha','Blöf','Bluff'],['diplomacy','cha','Diplomasi','Diplomacy'],
+['dungeoneering','wis','Zindan Bilgisi','Dungeoneering'],['endurance','con','Dayanıklılık','Endurance'],['heal','wis','Şifa','Heal'],['history','int','Tarih','History'],['insight','wis','Sezgi','Insight'],
+['intimidate','cha','Gözdağı','Intimidate'],['nature','wis','Doğa','Nature'],['perception','wis','Algı','Perception'],['religion','int','Din','Religion'],['stealth','dex','Gizlilik','Stealth'],
+['streetwise','cha','Sokak Bilgisi','Streetwise'],['thievery','dex','Hırsızlık','Thievery']];
+var C4=[
+{id:'fighter',n:['Savaşçı','Fighter'],role:['Defans','Defender'],src:['Martial','Martial'],hp:15,hl:6,sg:9,df:{fort:2,ref:0,will:0},ar:['str','con','dex'],pri:['str','con','wis'],
+ cs:['athletics','endurance','heal','intimidate','streetwise'],ns:3,d:['Düşmanları kendine çeken, ağır zırhlı ön saf savaşçısı.','Heavily armored front-liner who holds enemies in place.'],
+ f:[['Combat Challenge','Combat Challenge'],['Combat Superiority','Combat Superiority'],['Tüm zırhlar ve kalkanlar','All armor and shields']]},
+{id:'cleric',n:['Rahip','Cleric'],role:['Lider','Leader'],src:['Divine','Divine'],hp:12,hl:5,sg:7,df:{fort:0,ref:0,will:2},ar:['wis','str','cha'],pri:['wis','cha','str'],
+ cs:['arcana','diplomacy','heal','history','insight','religion'],ns:4,d:['Müttefikleri iyileştiren ve güçlendiren kutsal lider.','Divine leader who heals and empowers allies.'],
+ f:[['Healing Word','Healing Word'],['Channel Divinity','Channel Divinity'],['Ritual Caster','Ritual Caster']]},
+{id:'paladin',n:['Paladin','Paladin'],role:['Defans','Defender'],src:['Divine','Divine'],hp:15,hl:6,sg:10,df:{fort:1,ref:1,will:1},ar:['str','cha','wis'],pri:['str','cha','wis'],
+ cs:['diplomacy','endurance','heal','history','insight','intimidate','religion'],ns:3,d:['Kutsal güçle düşmanı işaretleyen savunmacı.','Defender who marks foes with divine power.'],
+ f:[['Divine Challenge','Divine Challenge'],['Lay on Hands','Lay on Hands'],['Divine Sanction','Divine Sanction']]},
+{id:'ranger',n:['Korucu','Ranger'],role:['Saldırgan','Striker'],src:['Martial','Martial'],hp:12,hl:5,sg:6,df:{fort:1,ref:1,will:0},ar:['dex','str','wis'],pri:['dex','wis','str'],
+ cs:['acrobatics','athletics','dungeoneering','endurance','heal','nature','perception','stealth'],ns:4,d:['Menzilden ya da yakından avlanan keskin nişancı.','Hunter who strikes from afar or up close.'],
+ f:[['Hunter\'s Quarry','Hunter\'s Quarry'],['Fighting Style','Fighting Style'],['Prime Shot','Prime Shot']]},
+{id:'rogue',n:['Hırsız','Rogue'],role:['Saldırgan','Striker'],src:['Martial','Martial'],hp:12,hl:5,sg:6,df:{fort:0,ref:2,will:0},ar:['dex','cha','str'],pri:['dex','cha','str'],
+ cs:['acrobatics','athletics','bluff','dungeoneering','insight','intimidate','perception','stealth','streetwise','thievery'],ns:4,d:['Sinsi saldırı hasarı veren çevik suikastçı.','Agile skirmisher who deals sneak attack damage.'],
+ f:[['Sneak Attack','Sneak Attack'],['First Strike','First Strike'],['Rogue Tactics','Rogue Tactics']]},
+{id:'warlock',n:['Büyücü (Warlock)','Warlock'],role:['Saldırgan','Striker'],src:['Arcane','Arcane'],hp:12,hl:5,sg:6,df:{fort:0,ref:1,will:1},ar:['con','cha','int'],pri:['cha','con','int'],
+ cs:['arcana','bluff','history','insight','intimidate','religion','streetwise','thievery'],ns:4,d:['Lanetler ve paktlarla hasar veren büyücü.','Caster who deals damage through curses and pacts.'],
+ f:[['Eldritch Pact','Eldritch Pact'],['Prime Shot','Prime Shot'],['Shadow Walk','Shadow Walk']]},
+{id:'warlord',n:['Komutan (Warlord)','Warlord'],role:['Lider','Leader'],src:['Martial','Martial'],hp:12,hl:5,sg:7,df:{fort:1,ref:0,will:1},ar:['str','cha','int'],pri:['str','cha','int'],
+ cs:['athletics','diplomacy','endurance','heal','history','intimidate'],ns:4,d:['Emirleriyle müttefiklere ekstra eylem sağlayan lider.','Leader whose commands grant allies extra actions.'],
+ f:[['Commanding Presence','Commanding Presence'],['Inspiring Word','Inspiring Word'],['Combat Leader','Combat Leader']]},
+{id:'wizard',n:['Sihirbaz','Wizard'],role:['Kontrolör','Controller'],src:['Arcane','Arcane'],hp:10,hl:4,sg:5,df:{fort:0,ref:0,will:2},ar:['int','wis','dex'],pri:['int','dex','wis'],
+ cs:['arcana','diplomacy','dungeoneering','history','insight','nature','religion'],ns:4,d:['Alan etkili büyülerle savaş alanını yöneten büyücü.','Caster who controls the battlefield with area spells.'],
+ f:[['Arcane Implement Mastery','Arcane Implement Mastery'],['Cantrips','Cantrips'],['Ritual Casting','Ritual Casting']]},
+{id:'barbarian',n:['Barbar','Barbarian'],role:['Saldırgan','Striker'],src:['Primal','Primal'],hp:15,hl:6,sg:8,df:{fort:1,ref:1,will:0},ar:['str','con','dex'],pri:['str','con','dex'],
+ cs:['acrobatics','athletics','endurance','heal','intimidate','nature','perception'],ns:3,d:['Vahşi öfkeyle ağır vuran ilkel savaşçı.','Primal warrior who hits hard in a savage rage.'],
+ f:[['Rage Strike','Rage Strike'],['Feral Might','Feral Might'],['Barbarian Agility','Barbarian Agility']]}
+];
+var R4=[
+{id:'human',n:['İnsan','Human'],fl:'human',opt:['str','con','dex','int','wis','cha'],spd:6,tr:[['+1 Fort/Ref/Will','+1 Fort, Ref and Will'],['Ek eğitimli beceri','Bonus trained skill'],['Ek at-will güç','Bonus at-will power']],df:{fort:1,ref:1,will:1}},
+{id:'dwarf',n:['Cüce','Dwarf'],fl:'dwarf',opt:['con','wis','str'],spd:5,tr:[['Düşük ışık görüşü','Low-light vision'],['Cüce dayanıklılığı (ekstra iyileşme)','Dwarven Resilience'],['Zırh hızı cezası yok','Not slowed by armor']],bonus:{endurance:2,dungeoneering:2}},
+{id:'elf',n:['Elf','Elf'],fl:'elf',opt:['dex','wis','int'],spd:7,tr:[['Düşük ışık görüşü','Low-light vision'],['Elf Doğruluğu (yeniden zar)','Elven Accuracy'],['Vahşi Adım','Wild Step']],bonus:{nature:2,perception:2}},
+{id:'eladrin',n:['Eladrin','Eladrin'],fl:'elf',opt:['int','dex','cha'],spd:6,tr:[['Düşük ışık görüşü','Low-light vision'],['Fey Adımı (ışınlanma)','Fey Step'],['Büyüye Karşı Eğitim','Eladrin Education']],bonus:{arcana:2,history:2}},
+{id:'halfelf',n:['Yarı Elf','Half-Elf'],fl:'elf',opt:['con','cha','wis'],spd:6,tr:[['Düşük ışık görüşü','Low-light vision'],['Ruh Topluluğu','Group Diplomacy'],['Ödünç güç','Dilettante']],bonus:{diplomacy:2,insight:2}},
+{id:'halfling',n:['Cüce Boylu (Halfling)','Halfling'],fl:'halfling',opt:['dex','cha','con'],spd:6,tr:[['Küçük boy','Small size'],['İkinci Şans','Second Chance'],['Cesur','Bold']],bonus:{acrobatics:2,thievery:2}},
+{id:'dragonborn',n:['Ejderhadoğan','Dragonborn'],fl:'draconic',opt:['str','cha','con'],spd:6,tr:[['Ejderha Nefesi','Dragon Breath'],['Ejderha Korkusu','Dragonfear'],['Ejderha Gücü','Draconic Heritage']],bonus:{history:2,intimidate:2}},
+{id:'tiefling',n:['Tiefling','Tiefling'],fl:'infernal',opt:['cha','int','dex'],spd:6,tr:[['Karanlık görüş','Low-light vision'],['Cehennem Direnci (ateş 5+seviye)','Infernal Wrath, fire resist'],['Kan Hasarı','Bloodhunt']],bonus:{bluff:2,stealth:2}},
+{id:'halforc',n:['Yarı Ork','Half-Orc'],fl:'orc',opt:['str','dex','con'],spd:6,tr:[['Düşük ışık görüşü','Low-light vision'],['Vahşi Saldırı','Furious Assault'],['Yarı Ork Dayanıklılığı','Half-Orc Resilience']],bonus:{endurance:2,intimidate:2}}
+];
+ED['4e']={id:'4e',n:['D&D 4. Baskı · 2008','D&D 4th Edition · 2008'],lv:[1,20],al:['LG','G','U','E','CE'],alpick:['LG','G','U','E','CE'],kind:'4e',
+ blurb:['Roller, güç kaynakları, iyileşme dalgaları ve dört savunma. Seviye 1–20.','Roles, power sources, healing surges and four defenses. Levels 1–20.'],
+ methods:['buy','array','roll4','manual'],defMethod:'buy',buyPts:22,hp:{mode:'4e'},races:R4,classes:C4,modShow:true,skills:S4,bonusMode:'choose1'};
+
+/* ---------- 5e (2014 & 2024) ---------- */
+var S5=[['acrobatics','dex','Akrobasi','Acrobatics'],['animal','wis','Hayvan Bakımı','Animal Handling'],['arcana','int','Gizem','Arcana'],['athletics','str','Atletizm','Athletics'],
+['deception','cha','Aldatma','Deception'],['history','int','Tarih','History'],['insight','wis','Sezgi','Insight'],['intimidation','cha','Gözdağı','Intimidation'],
+['investigation','int','Araştırma','Investigation'],['medicine','wis','Tıp','Medicine'],['nature','int','Doğa','Nature'],['perception','wis','Algı','Perception'],
+['performance','cha','Performans','Performance'],['persuasion','cha','İkna','Persuasion'],['religion','int','Din','Religion'],['sleight','dex','El Çabukluğu','Sleight of Hand'],
+['stealth','dex','Gizlilik','Stealth'],['survival','wis','Hayatta Kalma','Survival']];
+var ALLSK=S5.map(function(s){return s[0];});
+function C5(){return [
+{id:'barbarian',n:['Barbar','Barbarian'],hd:12,sv:['str','con'],ns:2,cs:['animal','athletics','intimidation','nature','perception','survival'],pri:['str','con','dex'],sc:'',
+ d:['Öfkeyle savaşan, yüksek canlı ön saf savaşçısı.','Rage-fueled front-liner with a huge health pool.'],f:[['Öfke (günde 2)','Rage (2/day)'],['Zırhsız Savunma: 10+Çev+Day','Unarmored Defense: 10+Dex+Con']]},
+{id:'bard',n:['Ozan','Bard'],hd:8,sv:['dex','cha'],ns:3,cs:ALLSK,pri:['cha','dex','con'],sc:'cha',cant:2,sl:2,
+ d:['Büyü ve müzikle destek veren çok yönlü sanatçı.','Versatile performer who supports with magic and music.'],f:[['Bardik İlham (d6)','Bardic Inspiration (d6)'],['Büyücülük','Spellcasting']]},
+{id:'cleric',n:['Rahip','Cleric'],hd:8,sv:['wis','cha'],ns:2,cs:['history','insight','medicine','persuasion','religion'],pri:['wis','con','str'],sc:'wis',cant:3,sl:2,
+ d:['Tanrısından güç alan şifacı ve savaşçı.','Divine healer and warrior.'],f:[['Büyücülük','Spellcasting'],['İlahi Alan','Divine Domain']]},
+{id:'druid',n:['Druid','Druid'],hd:8,sv:['int','wis'],ns:2,cs:['arcana','animal','insight','medicine','nature','perception','religion','survival'],pri:['wis','con','dex'],sc:'wis',cant:2,sl:2,
+ d:['Doğa büyüsü ve hayvana dönüşme ustası.','Nature caster who can take animal forms.'],f:[['Druidik dil','Druidic'],['Büyücülük','Spellcasting']]},
+{id:'fighter',n:['Savaşçı','Fighter'],hd:10,sv:['str','con'],ns:2,cs:['acrobatics','animal','athletics','history','insight','intimidation','perception','survival'],pri:['str','con','dex'],sc:'',
+ d:['Silah ve zırh ustası, dayanıklı dövüşçü.','Master of weapons and armor.'],f:[['Dövüş Stili','Fighting Style'],['Soluk Al (Second Wind)','Second Wind']]},
+{id:'monk',n:['Keşiş','Monk'],hd:8,sv:['str','dex'],ns:2,cs:['acrobatics','athletics','history','insight','religion','stealth'],pri:['dex','wis','con'],sc:'',
+ d:['Silahsız dövüşen, hızlı ve disiplinli savaşçı.','Fast, disciplined unarmed fighter.'],f:[['Zırhsız Savunma: 10+Çev+Bil','Unarmored Defense: 10+Dex+Wis'],['Dövüş Sanatları','Martial Arts']]},
+{id:'paladin',n:['Paladin','Paladin'],hd:10,sv:['wis','cha'],ns:2,cs:['athletics','insight','intimidation','medicine','persuasion','religion'],pri:['str','cha','con'],sc:'cha',
+ d:['Yemin ettiği davayı kutsal güçle savunan şövalye.','Oath-bound knight with divine power.'],f:[['İlahi Duyu','Divine Sense'],['Şifa Eli','Lay on Hands']]},
+{id:'ranger',n:['Korucu','Ranger'],hd:10,sv:['str','dex'],ns:3,cs:['animal','athletics','insight','investigation','nature','perception','stealth','survival'],pri:['dex','wis','con'],sc:'wis',
+ d:['Vahşi doğada iz süren avcı.','Wilderness tracker and hunter.'],f:[['Favori Düşman','Favored Enemy'],['Doğal Kâşif','Natural Explorer']]},
+{id:'rogue',n:['Hırsız','Rogue'],hd:8,sv:['dex','int'],ns:4,cs:['acrobatics','athletics','deception','insight','intimidation','investigation','perception','performance','persuasion','sleight','stealth'],pri:['dex','int','con'],sc:'',
+ d:['Gizli saldırı ve beceri ustası.','Master of sneak attacks and skills.'],f:[['Gizli Saldırı (1d6)','Sneak Attack (1d6)'],['Uzmanlık (2 beceri)','Expertise (2 skills)'],['Hırsız Argosu','Thieves\' Cant']]},
+{id:'sorcerer',n:['Büyücü (Sorcerer)','Sorcerer'],hd:6,sv:['con','cha'],ns:2,cs:['arcana','deception','insight','intimidation','persuasion','religion'],pri:['cha','con','dex'],sc:'cha',cant:4,sl:2,
+ d:['Kan bağından gelen doğuştan büyücü.','Innate caster powered by bloodline.'],f:[['Büyücülük','Spellcasting'],['Büyücü Kökeni','Sorcerous Origin']]},
+{id:'warlock',n:['Cadı (Warlock)','Warlock'],hd:8,sv:['wis','cha'],ns:2,cs:['arcana','deception','history','intimidation','investigation','nature','religion'],pri:['cha','con','dex'],sc:'cha',cant:2,sl:1,
+ d:['Bir varlıkla pakt yapmış büyücü.','Caster bound by a pact with a patron.'],f:[['Pakt Büyüsü','Pact Magic'],['Diyar Patronu','Otherworldly Patron']]},
+{id:'wizard',n:['Sihirbaz','Wizard'],hd:6,sv:['int','wis'],ns:2,cs:['arcana','history','insight','investigation','medicine','religion'],pri:['int','con','dex'],sc:'int',cant:3,sl:2,
+ d:['Büyü kitabıyla çalışan akademik büyücü.','Scholarly caster with a spellbook.'],f:[['Büyü Kitabı','Spellbook'],['Arcane Recovery','Arcane Recovery']]}
+];}
+var C14=C5();
+var C24=C5();
+C24.forEach(function(c){
+  if(c.id==='paladin'||c.id==='ranger'){c.sc=c.id==='paladin'?'cha':'wis';c.sl=2;c.cant=0;}
+  var o={barbarian:[['Öfke (günde 2)','Rage (2/day)'],['Silah Ustalığı (2)','Weapon Mastery (2)']],fighter:[['Dövüş Stili Feat\'i','Fighting Style feat'],['Soluk Al','Second Wind'],['Silah Ustalığı (3)','Weapon Mastery (3)']],
+   monk:[['Dövüş Sanatları (d6)','Martial Arts (d6)'],['Zırhsız Savunma','Unarmored Defense']],paladin:[['Şifa Eli','Lay on Hands'],['Büyücülük','Spellcasting'],['Silah Ustalığı (2)','Weapon Mastery (2)']],
+   ranger:[['Favori Düşman','Favored Enemy'],['Büyücülük','Spellcasting'],['Silah Ustalığı (2)','Weapon Mastery (2)']],rogue:[['Gizli Saldırı','Sneak Attack'],['Uzmanlık','Expertise'],['Silah Ustalığı (2)','Weapon Mastery (2)']],
+   wizard:[['Büyü Kitabı','Spellbook'],['Ritüel Uyumu','Ritual Adept'],['Arcane Recovery','Arcane Recovery']],cleric:[['Büyücülük','Spellcasting'],['İlahi Düzen','Divine Order']],druid:[['Büyücülük','Spellcasting'],['İlkel Düzen','Primal Order']],
+   sorcerer:[['Büyücülük','Spellcasting'],['Doğuştan Büyücülük','Innate Sorcery']],warlock:[['Cadılık Davetleri','Eldritch Invocations'],['Pakt Büyüsü','Pact Magic']],bard:[['Bardik İlham (d6)','Bardic Inspiration (d6)'],['Büyücülük','Spellcasting']]};
+  if(o[c.id])c.f=o[c.id];
+});
+var R14=[
+{id:'human',n:['İnsan','Human'],fl:'human',mods:{str:1,dex:1,con:1,int:1,wis:1,cha:1},spd:30,tr:[['Dil: Ortak + 1 ek','Common + 1 extra language']]},
+{id:'dwarf',n:['Cüce','Dwarf'],fl:'dwarf',mods:{con:2},spd:25,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Cüce Dayanıklılığı (zehir)','Dwarven Resilience'],['Taş İşçiliği Bilgisi','Stonecunning']],
+ sub:[{id:'hill',n:['Tepe Cücesi','Hill Dwarf'],mods:{wis:1},tr:[['Cüce Sertliği (+1 can/seviye)','Dwarven Toughness (+1 HP/level)']],hpl:1},{id:'mountain',n:['Dağ Cücesi','Mountain Dwarf'],mods:{str:2},tr:[['Orta zırh ustalığı','Medium armor training']]}]},
+{id:'elf',n:['Elf','Elf'],fl:'elf',mods:{dex:2},spd:30,sk:['perception'],tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Peri Soyu (büyüye karşı avantaj)','Fey Ancestry'],['Trans (4 saat dinlenme)','Trance']],
+ sub:[{id:'high',n:['Yüksek Elf','High Elf'],mods:{int:1},tr:[['Bir sihirbaz hilesi (cantrip)','One wizard cantrip']]},{id:'wood',n:['Orman Elfi','Wood Elf'],mods:{wis:1},spd:35,tr:[['Hız 35 ft','Speed 35 ft'],['Doğada gizlenme','Mask of the Wild']]},{id:'drow',n:['Drow','Drow'],mods:{cha:1},tr:[['Üstün karanlık görüş 120 ft','Superior Darkvision 120 ft'],['Güneş duyarlılığı','Sunlight Sensitivity']]}]},
+{id:'halfling',n:['Cüce Boylu (Halfling)','Halfling'],fl:'halfling',mods:{dex:2},spd:25,tr:[['Şanslı (1\'leri yeniden at)','Lucky'],['Cesur','Brave'],['Çevik','Halfling Nimbleness']],
+ sub:[{id:'lightfoot',n:['Hafif Ayak','Lightfoot'],mods:{cha:1},tr:[['Doğal gizlenme','Naturally Stealthy']]},{id:'stout',n:['Sağlam','Stout'],mods:{con:1},tr:[['Zehire direnç','Stout Resilience']]}]},
+{id:'dragonborn',n:['Ejderhadoğan','Dragonborn'],fl:'draconic',mods:{str:2,cha:1},spd:30,tr:[['Ejderha atası ve nefes silahı','Draconic ancestry and breath weapon'],['Hasar direnci','Damage resistance']]},
+{id:'gnome',n:['Gnom','Gnome'],fl:'gnome',mods:{int:2},spd:25,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Gnom Kurnazlığı (büyüye avantaj)','Gnome Cunning']],
+ sub:[{id:'forest',n:['Orman Gnomu','Forest Gnome'],mods:{dex:1},tr:[['Minor Illusion','Minor Illusion']]},{id:'rock',n:['Kaya Gnomu','Rock Gnome'],mods:{con:1},tr:[['Eşya bilgisi','Artificer\'s Lore']]}]},
+{id:'halfelf',n:['Yarı Elf','Half-Elf'],fl:'elf',mods:{cha:2},spd:30,pick:{n:2,v:1,ex:['cha']},pickSk:2,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Peri Soyu','Fey Ancestry'],['2 ek beceri','Skill Versatility']]},
+{id:'halforc',n:['Yarı Ork','Half-Orc'],fl:'orc',mods:{str:2,con:1},spd:30,sk:['intimidation'],tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Amansız Dayanıklılık','Relentless Endurance'],['Vahşi Saldırılar','Savage Attacks']]},
+{id:'tiefling',n:['Tiefling','Tiefling'],fl:'infernal',mods:{int:1,cha:2},spd:30,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Ateş direnci','Hellish Resistance'],['Cehennemi Miras (büyüler)','Infernal Legacy']]}
+];
+var R24=[
+{id:'human',n:['İnsan','Human'],fl:'human',spd:30,tr:[['Kaynak Bolluğu (Heroic Inspiration)','Resourceful (Heroic Inspiration)'],['Çok Yönlü (ek origin feat)','Versatile (extra Origin feat)'],['Beceri: +1 ek','Skillful (+1 skill)']],skx:1},
+{id:'dwarf',n:['Cüce','Dwarf'],fl:'dwarf',spd:30,tr:[['Karanlık görüş 120 ft','Darkvision 120 ft'],['Cüce Dayanıklılığı','Dwarven Resilience'],['Cüce Sertliği (+1 can/seviye)','Dwarven Toughness'],['Taş Bilgisi','Stonecunning']],hpl:1},
+{id:'elf',n:['Elf','Elf'],fl:'elf',spd:30,sk:null,skOpt:['insight','perception','survival'],tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Peri Soyu','Fey Ancestry'],['Trans','Trance'],['Elf Soyu (Yüksek/Orman/Drow)','Elven Lineage']]},
+{id:'gnome',n:['Gnom','Gnome'],fl:'gnome',spd:30,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Gnom Kurnazlığı','Gnomish Cunning'],['Gnom Soyu (Orman/Kaya)','Gnomish Lineage']]},
+{id:'halfling',n:['Cüce Boylu (Halfling)','Halfling'],fl:'halfling',spd:30,tr:[['Şanslı','Luck'],['Cesur','Brave'],['Çevik','Halfling Nimbleness'],['Doğal Gizlilik','Naturally Stealthy']]},
+{id:'orc',n:['Ork','Orc'],fl:'orc',spd:30,tr:[['Karanlık görüş 120 ft','Darkvision 120 ft'],['Adrenalin Hücumu','Adrenaline Rush'],['Amansız Dayanıklılık','Relentless Endurance']]},
+{id:'dragonborn',n:['Ejderhadoğan','Dragonborn'],fl:'draconic',spd:30,tr:[['Ejderha atası','Draconic Ancestry'],['Nefes Silahı','Breath Weapon'],['Hasar direnci','Damage Resistance'],['Uçuş (5. seviyede)','Draconic Flight (level 5)']]},
+{id:'goliath',n:['Goliath','Goliath'],fl:'orc',spd:35,tr:[['Dev Soyu','Giant Ancestry'],['Büyük Yapı','Large Form (level 5)'],['Güçlü Yapı','Powerful Build']]},
+{id:'aasimar',n:['Aasimar','Aasimar'],fl:'elf',spd:30,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Göksel Direnç','Celestial Resistance'],['Şifa Elleri','Healing Hands'],['Işık Taşıyıcı','Light Bearer']]},
+{id:'tiefling',n:['Tiefling','Tiefling'],fl:'infernal',spd:30,tr:[['Karanlık görüş 60 ft','Darkvision 60 ft'],['Diyar Mirası','Otherworldly Presence'],['Cehennemi/Ayrık Miras','Fiendish Legacy']]}
+];
+var B14=[
+['acolyte','Din Adamı','Acolyte',['insight','religion']],['charlatan','Düzenbaz','Charlatan',['deception','sleight']],['criminal','Suçlu','Criminal',['deception','stealth']],
+['entertainer','Sanatçı','Entertainer',['acrobatics','performance']],['folkhero','Halk Kahramanı','Folk Hero',['animal','survival']],['guildartisan','Loncalı Usta','Guild Artisan',['insight','persuasion']],
+['hermit','Münzevi','Hermit',['medicine','religion']],['noble','Soylu','Noble',['history','persuasion']],['outlander','Yabancı Diyarlı','Outlander',['athletics','survival']],
+['sage','Bilge','Sage',['arcana','history']],['sailor','Denizci','Sailor',['athletics','perception']],['soldier','Asker','Soldier',['athletics','intimidation']],['urchin','Sokak Çocuğu','Urchin',['sleight','stealth']]
+].map(function(b){return {id:b[0],n:[b[1],b[2]],sk:b[3]};});
+var B24=[
+['acolyte','Din Adamı','Acolyte',['int','wis','cha'],'Magic Initiate (Cleric)',['insight','religion']],['artisan','Zanaatkâr','Artisan',['str','dex','int'],'Crafter',['investigation','persuasion']],
+['charlatan','Düzenbaz','Charlatan',['dex','con','cha'],'Skilled',['deception','sleight']],['criminal','Suçlu','Criminal',['dex','con','int'],'Alert',['sleight','stealth']],
+['entertainer','Sanatçı','Entertainer',['str','dex','cha'],'Musician',['acrobatics','performance']],['farmer','Çiftçi','Farmer',['str','con','wis'],'Tough',['animal','nature']],
+['guard','Muhafız','Guard',['str','int','wis'],'Alert',['athletics','perception']],['guide','Rehber','Guide',['dex','con','wis'],'Magic Initiate (Druid)',['stealth','survival']],
+['hermit','Münzevi','Hermit',['con','wis','cha'],'Healer',['medicine','religion']],['merchant','Tüccar','Merchant',['con','int','cha'],'Lucky',['animal','persuasion']],
+['noble','Soylu','Noble',['str','int','cha'],'Skilled',['history','persuasion']],['sage','Bilge','Sage',['con','int','wis'],'Magic Initiate (Wizard)',['arcana','history']],
+['sailor','Denizci','Sailor',['str','dex','wis'],'Tavern Brawler',['acrobatics','perception']],['scribe','Yazıcı','Scribe',['dex','int','wis'],'Skilled',['investigation','perception']],
+['soldier','Asker','Soldier',['str','dex','con'],'Savage Attacker',['athletics','intimidation']],['wayfarer','Gezgin','Wayfarer',['dex','wis','cha'],'Lucky',['insight','stealth']]
+].map(function(b){return {id:b[0],n:[b[1],b[2]],ab:b[3],feat:b[4],sk:b[5]};});
+var EQ5={barbarian:[['Büyük balta','Greataxe'],['2 el baltası','2 handaxes'],['Kâşif çantası','Explorer\'s pack']],bard:[['Rapier','Rapier'],['Deri zırh','Leather armor'],['Lavta','Lute']],cleric:[['Gürz','Mace'],['Pul zırh ve kalkan','Scale mail and shield'],['Kutsal sembol','Holy symbol']],
+druid:[['Ahşap kalkan','Wooden shield'],['Pala','Scimitar'],['Deri zırh, druid odağı','Leather armor, druidic focus']],fighter:[['Zincir zırh','Chain mail'],['Uzun kılıç ve kalkan','Longsword and shield'],['Hafif yay ve 20 ok','Light crossbow and 20 bolts']],
+monk:[['Kısa kılıç','Shortsword'],['10 dart','10 darts'],['Zindan çantası','Dungeoneer\'s pack']],paladin:[['Uzun kılıç ve kalkan','Longsword and shield'],['Zincir zırh','Chain mail'],['Kutsal sembol','Holy symbol']],
+ranger:[['Pul zırh','Scale mail'],['2 kısa kılıç','2 shortswords'],['Uzun yay ve 20 ok','Longbow and 20 arrows']],rogue:[['Rapier','Rapier'],['Kısa yay','Shortbow'],['Hırsız aletleri, deri zırh','Thieves\' tools, leather armor']],
+sorcerer:[['Hafif yay','Light crossbow'],['2 hançer','2 daggers'],['Arcane odak','Arcane focus']],warlock:[['Hafif yay','Light crossbow'],['Deri zırh, 2 hançer','Leather armor, 2 daggers'],['Arcane odak','Arcane focus']],
+wizard:[['Hançer','Dagger'],['Büyü kitabı','Spellbook'],['Bilgin çantası','Scholar\'s pack']]};
+ED['5e']={id:'5e',n:['D&D 5. Baskı · 2014','D&D 5th Edition · 2014'],lv:[1,20],al:A9,kind:'5e',
+ blurb:['Irk ve alt ırk yetenek bonusu verir; geçmiş beceri verir. Seviye 1–20.','Race and subrace grant ability bonuses; background grants skills. Levels 1–20.'],
+ methods:['array','buy','roll4','manual'],defMethod:'array',buyPts:27,hp:{mode:'5e'},races:R14,classes:C14,bgs:B14,skills:S5,modShow:true,eq:EQ5};
+ED['5.24']={id:'5.24',n:['D&D 5.5 · 2024','D&D 5.5 (2024 rules)'],lv:[1,20],al:A9,kind:'5e24',
+ blurb:['Yetenek bonusu artık geçmişten gelir (+2/+1 ya da +1/+1/+1) ve her geçmiş bir köken feat\'i verir.','Ability bonuses come from the background (+2/+1 or +1/+1/+1) and each background gives an Origin feat.'],
+ methods:['array','buy','roll4','manual'],defMethod:'array',buyPts:27,hp:{mode:'5e'},races:R24,classes:C24,bgs:B24,skills:S5,modShow:true,eq:EQ5};
+var ORDER=['bx','2e','3.5','4e','5e','5.24'];
+
+/* ---------- state ---------- */
+var S={ed:'5e',name:'',level:1,align:'NG',race:'',sub:'',cls:'',bg:'',rpick:[],r4:'',bgMode:'21',bgA:'',bgB:'',method:'array',base:{},sk:{},ranks:{},feats:[],hpMode:'fixed',hp1:null,hpr:[],gold:null};
+var COST4={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9,16:11,17:14,18:18};
+var ARR={'5e':[15,14,13,12,10,8],'5.24':[15,14,13,12,10,8],'3.5':[15,14,13,12,10,8],'4e':[16,14,13,12,11,10]};
+var E=function(){return ED[S.ed];};
+var findIn=function(a,id){for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;};
+var gRace=function(){var e=E();return e.races?findIn(e.races,S.race):null;};
+var gSub=function(){var r=gRace();return r&&r.sub?findIn(r.sub,S.sub):null;};
+var gCls=function(){return findIn(E().classes,S.cls);};
+var gBg=function(){var e=E();return e.bgs?findIn(e.bgs,S.bg):null;};
+var costTbl=function(){return S.ed==='4e'?COST4:S.ed==='5e'||S.ed==='5.24'?COST5:COST;};
+var bounds=function(){var e=E();if(S.method==='buy')return S.ed==='5e'||S.ed==='5.24'?[8,15]:[8,18];if(S.method==='manual')return e.kind==='bx'||e.kind==='2e'?[3,18]:[1,20];return [3,18];};
+function modOf(s){return S.ed==='bx'?mxB(s):Math.floor((s-10)/2);}
+function raceBonus(){
+  var e=E(),r=gRace(),o={},sub=gSub(),b=gBg();
+  AB.forEach(function(a){o[a]=0;});
+  if(e.kind==='2e'||e.kind==='3.5'){if(r)for(var k in r.mods)o[k]+=r.mods[k];}
+  else if(e.kind==='4e'){if(S.r4)o[S.r4]+=2;}
+  else if(e.kind==='5e'){if(r)for(var k2 in r.mods)o[k2]+=r.mods[k2];if(sub)for(var k3 in sub.mods)o[k3]+=sub.mods[k3];S.rpick.forEach(function(a){if(a)o[a]+=1;});}
+  else if(e.kind==='5e24'&&b){if(S.bgMode==='111')b.ab.forEach(function(a){o[a]+=1;});else{if(S.bgA)o[S.bgA]+=2;if(S.bgB)o[S.bgB]+=1;}}
+  return o;
+}
+function finals(){
+  var rb=raceBonus(),o={};
+  var hi=S.ed==='bx'||S.ed==='2e'?18:30,lo=S.ed==='bx'||S.ed==='2e'?3:1;
+  AB.forEach(function(a){o[a]=cl((S.base[a]||10)+rb[a],lo,hi);});
+  return o;
+}
+function validClasses(){
+  var e=E(),r=gRace();
+  return e.classes.filter(function(c){return !(e.kind==='2e'&&r&&r.cls&&r.cls.indexOf(c.id)<0);});
+}
+function validAligns(){
+  var e=E(),c=gCls();
+  if(e.kind==='4e')return e.alpick;
+  if(e.kind==='bx')return ['L','Ne','C'];
+  if(e.kind==='2e'||e.kind==='3.5'){return c&&c.al?c.al:A9;}
+  return A9;
+}
+function skillGroups(){
+  var e=E(),c=gCls(),r=gRace(),sub=gSub(),b=gBg(),g=[],fx=[];
+  if(e.kind==='5e'||e.kind==='5e24'){
+    if(b)fx=fx.concat(b.sk);
+    if(r&&r.sk)fx=fx.concat(r.sk);
+    if(c)g.push({key:'cls',n:c.ns,list:c.cs,l:u('clsSkills')});
+    if(e.kind==='5e'&&r&&r.pickSk)g.push({key:'race',n:r.pickSk,list:ALLSK,l:u('raceSkills')});
+    if(e.kind==='5e24'&&r&&r.skx)g.push({key:'race',n:r.skx,list:ALLSK,l:u('raceSkills')});
+    if(e.kind==='5e24'&&r&&r.skOpt)g.push({key:'race',n:1,list:r.skOpt,l:u('raceSkills')});
+  }else if(e.kind==='4e'){
+    if(c)g.push({key:'cls',n:c.ns,list:c.cs,l:u('clsSkills')});
+  }
+  return {groups:g,fixed:fx};
+}
+function normalize(){
+  ensureDet();
+  var e=E();
+  S.level=Math.round(+S.level)||1;
+  if(e.methods.indexOf(S.method)<0)S.method=e.defMethod;
+  if(S.bgMode!=='21'&&S.bgMode!=='111')S.bgMode='21';
+  if(S.hpMode!=='fixed'&&S.hpMode!=='roll')S.hpMode='fixed';
+  if(typeof S.base!=='object'||!S.base)S.base={};
+  AB.forEach(function(a){S.base[a]=Math.round(+S.base[a])||10;});
+  S.hp1=Math.round(+S.hp1)||0;
+  S.hpr=Array.isArray(S.hpr)?S.hpr.map(function(x){return Math.round(+x)||1;}):[];
+  if(typeof S.ranks!=='object'||!S.ranks)S.ranks={};
+  Object.keys(S.ranks).forEach(function(k){S.ranks[k]=Math.round(+S.ranks[k])||0;});
+  if(!Array.isArray(S.feats))S.feats=[];
+  S.feats=S.feats.map(function(x){return String(x==null?'':x).slice(0,80);});
+  if(typeof S.sk!=='object'||!S.sk)S.sk={};
+  Object.keys(S.sk).forEach(function(k){if(!Array.isArray(S.sk[k]))S.sk[k]=[];});
+  if(!Array.isArray(S.rpick))S.rpick=[];
+  S.name=String(S.name==null?'':S.name).slice(0,60);
+  if(S.gold!=null)S.gold=Math.round(+S.gold)||0;
+  if(!S.race&&e.races)S.race=e.races[0].id;
+  var r=gRace();
+  if(e.races&&!r){S.race=e.races[0].id;r=gRace();}
+  if(r&&r.sub){if(!gSub())S.sub=r.sub[0].id;}else S.sub='';
+  var vc=validClasses();
+  if(!findIn(vc,S.cls))S.cls=vc[0].id;
+  if(e.bgs&&!gBg())S.bg=e.bgs[0].id;
+  var al=validAligns();
+  if(al.indexOf(S.align)<0)S.align=al[0];
+  var lv=e.lv;S.level=cl(+S.level||1,lv[0],lv[1]);
+  if(e.kind==='4e'){var opt=r.opt;if(opt.indexOf(S.r4)<0)S.r4=opt[0];}
+  if(e.kind==='5e'){
+    var p=r&&r.pick?r.pick.n:0;S.rpick=(S.rpick||[]).slice(0,p);
+    while(S.rpick.length<p)S.rpick.push('');
+    var ex=r&&r.pick?r.pick.ex:[];
+    S.rpick=S.rpick.map(function(a,i){return (a&&ex.indexOf(a)<0&&S.rpick.indexOf(a)===i)?a:'';});
+    for(var i=0;i<p;i++)if(!S.rpick[i]){var o=AB.filter(function(a){return ex.indexOf(a)<0&&S.rpick.indexOf(a)<0;});S.rpick[i]=o[0];}
+  }
+  if(e.kind==='5e24'){
+    var b=gBg();
+    if(b){if(b.ab.indexOf(S.bgA)<0)S.bgA=b.ab[0];if(b.ab.indexOf(S.bgB)<0||S.bgB===S.bgA)S.bgB=b.ab.filter(function(a){return a!==S.bgA;})[0];}
+  }
+  var sg=skillGroups(),used=sg.fixed.slice();
+  sg.groups.forEach(function(g){
+    var cur=(S.sk[g.key]||[]).filter(function(s,i,a){return g.list.indexOf(s)>=0&&used.indexOf(s)<0&&a.indexOf(s)===i;}).slice(0,g.n);
+    S.sk[g.key]=cur;used=used.concat(cur);
+  });
+  Object.keys(S.sk).forEach(function(k){if(!sg.groups.some(function(g){return g.key===k;}))delete S.sk[k];});
+  if(e.kind==='3.5'){
+    var c=gCls(),cap=ranksCap();
+    Object.keys(S.ranks).forEach(function(k){var isC=c.cs.indexOf(k)>=0;var m=isC?cap:Math.floor(cap/2);if(S.ranks[k]>m)S.ranks[k]=m;if(S.ranks[k]<=0)delete S.ranks[k];});
+    var left=ranksLeft();
+    while(left<0){var ks=Object.keys(S.ranks);if(!ks.length)break;var kk=ks[ks.length-1];S.ranks[kk]--;if(S.ranks[kk]<=0)delete S.ranks[kk];left=ranksLeft();}
+    var nf=featCount();S.feats=(S.feats||[]).slice(0,nf);while(S.feats.length<nf)S.feats.push('');
+  }
+  var h=hdOf();
+  if(!S.hp1||S.hp1>h)S.hp1=dn(h);
+  S.hpr=(S.hpr||[]).slice(0,Math.max(0,S.level-1));
+  while(S.hpr.length<S.level-1)S.hpr.push(dn(Math.max(h,2)));
+}
+function hdOf(){var c=gCls();return c&&c.hd?c.hd:8;}
+function intM(){return modOf(finals().int);}
+function ptsPerLevel(){var c=gCls(),r=gRace();return Math.max(1,c.sp+intM()+(r&&r.sp?r.sp:0));}
+function ranksTotal(){var p=ptsPerLevel();return p*3+p+(S.level-1)*p;}
+function ranksSpent(){var c=gCls(),t=0;Object.keys(S.ranks).forEach(function(k){t+=S.ranks[k]*(c.cs.indexOf(k)>=0?1:2);});return t;}
+function ranksLeft(){return ranksTotal()-ranksSpent();}
+function ranksCap(){return S.level+3;}
+function featCount(){var r=gRace(),c=gCls();return 1+Math.floor(S.level/3)+(r&&r.feat?1:0)+(c.id==='fighter'?1:0)+(c.id==='wizard'&&S.level>=1?1:0);}
+function hpTotal(){
+  var e=E(),f=finals(),c=gCls(),cm=modOf(f.con),h=hdOf(),lv=S.level,tot=0;
+  if(e.kind==='bx')return Math.max(1,S.hp1+cm);
+  if(e.kind==='2e'){var ca=f.con<=3?-2:f.con<=6?-1:f.con<=14?0:f.con===15?1:f.con===16?2:(c.g==='war'?(f.con===17?3:4):2);return Math.max(1,S.hp1+ca);}
+  if(e.kind==='4e'){tot=c.hp+f.con;tot+=(lv-1)*c.hl;return tot;}
+  tot=h+cm;
+  var avg=Math.floor(h/2)+1;
+  for(var i=0;i<lv-1;i++){tot+=Math.max(1,(S.hpMode==='roll'?S.hpr[i]:avg)+cm);}
+  var r=gRace(),sb=gSub();
+  if(e.kind==='5e'&&sb&&sb.hpl)tot+=lv*sb.hpl;
+  if(e.kind==='5e24'&&r&&r.hpl)tot+=lv*r.hpl;
+  if(e.kind==='3.5'){if(S.feats.indexOf('Toughness')>=0)tot+=3;}
+  return Math.max(1,tot);
+}
+var GOLD={bx:[3,6,10],'3.5':{barbarian:[4,4,10],bard:[4,4,10],cleric:[5,4,10],druid:[2,4,10],fighter:[6,4,10],monk:[5,4,1],paladin:[6,4,10],ranger:[6,4,10],rogue:[5,4,10],sorcerer:[3,4,10],wizard:[3,4,10]}};
+function goldSpec(){var e=E(),c=gCls();if(e.kind==='bx')return GOLD.bx;if(e.kind==='2e')return c.gp;if(e.kind==='3.5')return GOLD['3.5'][c.id];if(e.kind==='4e')return [0,0,100];return null;}
+function goldVal(){var g=goldSpec();if(!g)return null;if(S.gold==null||S.goldKey!==S.ed+S.cls){var t=0;for(var i=0;i<g[0];i++)t+=dn(g[1]);S.gold=g[0]?t*g[2]:g[2];S.goldKey=S.ed+S.cls;}return S.gold;}
+function goldTxt(){var g=goldSpec();if(!g)return '';return g[0]?g[0]+'d'+g[1]+(g[2]>1?' × '+g[2]:'')+' gp':g[2]+' gp';}
+/* ---------- scores generators ---------- */
+function roll4(){var a=[dn(6),dn(6),dn(6),dn(6)].sort(function(x,y){return x-y;});return a[1]+a[2]+a[3];}
+function roll3(){return dn(6)+dn(6)+dn(6);}
+function priOrder(){var c=gCls(),p=c&&c.pri?c.pri.slice():[];AB.forEach(function(a){if(p.indexOf(a)<0)p.push(a);});return p;}
+function assignSorted(vals){var v=vals.slice().sort(function(a,b){return b-a;}),p=priOrder();S.base={};p.forEach(function(a,i){S.base[a]=v[i];});}
+function buyAuto(){
+  var cap=bounds()[1],T=costTbl(),budget=E().buyPts,p=priOrder();
+  var tg={'5e':[15,14,13,10,10,8],'5.24':[15,14,13,10,10,8],'3.5':[16,14,14,12,10,8],'4e':[16,12,11,10,9,8]}[S.ed];
+  S.base={};p.forEach(function(a,i){S.base[a]=tg[i];});
+  var spent=function(){var t=0;AB.forEach(function(a){t+=T[S.base[a]];});return t;};
+  var go=true;
+  while(go){go=false;for(var i=0;i<p.length;i++){var a=p[i],n=S.base[a]+1;if(n<=cap&&spent()-T[S.base[a]]+T[n]<=budget){S.base[a]=n;go=true;}}}
+}
+function genScores(){
+  var m=S.method;
+  if(m==='roll3'){S.base={};AB.forEach(function(a){S.base[a]=roll3();});}
+  else if(m==='roll4'){var v=[];for(var i=0;i<6;i++)v.push(roll4());assignSorted(v);}
+  else if(m==='array'){assignSorted(ARR[S.ed]||[15,14,13,12,10,8]);}
+  else if(m==='buy'){buyAuto();}
+  else if(m==='manual'){if(!AB.every(function(a){return S.base[a];})){S.base={};AB.forEach(function(a){S.base[a]=10;});}}
+}
+function buySpent(){var T=costTbl(),t=0;AB.forEach(function(a){t+=(T[S.base[a]]||0);});return t;}
+function setEdition(id,keep){
+  var n=S.name,lang=L;
+  S={ed:id,name:keep?n:'',level:1,align:'',race:'',sub:'',cls:'',bg:'',rpick:[],r4:'',bgMode:'21',bgA:'',bgB:'',method:ED[id].defMethod,base:{},sk:{},ranks:{},feats:[],hpMode:'fixed',hp1:null,hpr:[],gold:null,det:newDet()};
+  normalize();genScores();normalize();
+}
+
+/* ---------- sheet model ---------- */
+var FULLC=['bard','cleric','druid','sorcerer','wizard'];
+function conBonus2e(con){return con<=3?0:con<=6?1:con<=10?2:con<=13?3:con<=17?4:5;}
+function slotsFor(c){
+  var lv=S.level,k=S.ed==='5e24'?'5e24':'5e';
+  if(FULLC.indexOf(c.id)>=0)return SLOTS_FULL[lv]||[];
+  if(c.id==='paladin'||c.id==='ranger'){if(k==='5e'&&lv<2)return [];return SLOTS_FULL[Math.ceil(lv/2)]||[];}
+  return [];
+}
+function pactSlots(lv){var n=lv>=11?3:lv>=2?2:1;var sl=lv>=9?5:lv>=7?4:lv>=5?3:lv>=3?2:1;return {n:lv>=17?4:n,l:sl};}
+function model(){
+  var e=E(),c=gCls(),r=gRace(),sub=gSub(),b=gBg(),f=finals(),lv=S.level,K=e.kind;
+  var mod={};AB.forEach(function(a){mod[a]=modOf(f[a]);});
+  var M={ab:[],tiles:[],blocks:[],warn:[],sub:[],badge:''};
+  var tile=function(l,v,s,sm){M.tiles.push({l:l,v:String(v),s:s||'',sm:!!sm});};
+  var block=function(h,type,items){M.blocks.push({h:h,type:type,items:items});};
+  var feats=function(arr){return (arr||[]).map(function(x){return {t:x[L]};});};
+  var mvTxt=function(ft){return L===0?String(ft*0.3).replace('.',',')+' m':ft+' ft';};
+  M.badge=e.n[L].split(' · ')[0];
+  if(r){M.sub.push(r.n[L]+(sub?' ('+sub.n[L]+')':''));}
+  M.sub.push(c.n[L]);
+  if(e.lv[1]>1)M.sub.push(u('lvl')+' '+lv);
+  M.sub.push(AL[S.align][L]);
+  if(b)M.sub.push(b.n[L]);
+  AB.forEach(function(a){
+    var o={k:ABS[a][L],score:f[a],mod:mod[a],x:''};
+    if(K==='2e'){o.mod=null;
+      if(a==='str'){var t=T2.str(f.str);o.x=(L?'Hit ':'Vuruş ')+sg(t[0])+' / '+(L?'Dmg ':'Hasar ')+sg(t[1]);}
+      if(a==='dex'){var d=T2.dex(f.dex);o.x=(L?'React ':'Tepki ')+sg(d[0])+' / AC '+sg(-d[2]);}
+      if(a==='con'){var ca=f.con<=3?-2:f.con<=6?-1:f.con<=14?0:f.con===15?1:f.con===16?2:(c.g==='war'?(f.con===17?3:4):2);o.x='HP '+sg(ca)+(L?'/level':'/seviye');}
+    }
+    M.ab.push(o);
+  });
+  if(K==='bx'){
+    var px=f[c.pri[0]],xp=px>=16?10:px>=13?5:px>=9?0:px>=6?-10:-20;
+    tile('HP',hpTotal());
+    tile('AC',9-mod.dex,'AAC '+(10+mod.dex));
+    tile('THAC0',19,L?'Level 1':'1. seviye');
+    tile(L?'Move':'Hareket',"120'",'(36 m)',true);
+    tile(L?'XP bonus':'XP bonusu',sg(xp)+'%',ABS[c.pri[0]][L],true);
+    tile(L?'Gold':'Altın',goldVal()+' gp','3d6 × 10',true);
+    Object.keys(c.req).forEach(function(k){if(f[k]<c.req[k])M.warn.push(u('warnReq')+': '+ABS[k][L]+' '+c.req[k]+'+');});
+    block(u('saves'),'kv',c.sv.map(function(v,i){return {k:SV_BX[i][L],v:String(v)};}));
+    block(u('feat'),'list',feats(c.f));
+    block(u('equip'),'list',feats(c.eq.concat(BASEKIT)));
+  }
+  if(K==='2e'){
+    var g=G2[c.g],d2=T2.dex(f.dex);
+    tile('HP',hpTotal());
+    tile('AC',10+d2[2]);
+    tile('THAC0',20);
+    tile(L?'Move':'Hareket',r.spd,'('+mvTxt(r.spd*10)+')',true);
+    tile(L?'Gold':'Altın',goldVal()+' gp',goldTxt(),true);
+    Object.keys(c.req).forEach(function(k){if(f[k]<c.req[k])M.warn.push(u('warnReq')+': '+ABS[k][L]+' '+c.req[k]+'+');});
+    var cb=conBonus2e(f.con),sb=r.sb||{};
+    var svv=g.sv.slice();
+    if(sb.ppd)svv[0]-=cb;if(sb.rsw){svv[1]-=cb;}if(sb.sp)svv[4]-=cb;
+    block(u('saves'),'kv',svv.map(function(v,i){return {k:SV_2E[i][L],v:String(v)};}));
+    block(L?'Proficiencies':'Yeterlilikler','list',[{t:(L?'Weapon slots: ':'Silah yuvası: ')+g.wp+(L?' (untrained '+g.pen+')':' (ustalıksız '+g.pen+')')},{t:(L?'Nonweapon slots: ':'Silah dışı yuva: ')+g.np}]);
+    block(u('racial'),'list',feats(r.tr));
+    block(u('feat'),'list',feats(c.f));
+    block(u('equip'),'list',feats(c.eq));
+  }
+  if(K==='3.5'){
+    var cap=ranksCap(),isF=c.bab==='f',babv=Math.floor(lv*(c.bab==='f'?1:c.bab==='m'?0.75:0.5));
+    var sv35=function(i,ab){var good=c.sv[i];var base=good?2+Math.floor(lv/2):Math.floor(lv/3);return base+mod[ab]+(r.id==='halfling'?1:0);};
+    tile('HP',hpTotal());
+    tile('AC',10+mod.dex+(r.size||0),(L?'touch ':'dokunuş ')+(10+mod.dex+(r.size||0)));
+    tile(L?'Initiative':'Girişim',sg(mod.dex));
+    tile(L?'Speed':'Hız',mvTxt(r.spd),'',true);
+    tile('BAB',sg(babv));
+    tile(L?'Gold':'Altın',goldVal()+' gp',goldTxt(),true);
+    block(u('saves'),'kv',[{k:L?'Fortitude':'Dayanıklılık',v:sg(sv35(0,'con')),dot:c.sv[0]?2:0},{k:L?'Reflex':'Refleks',v:sg(sv35(1,'dex')),dot:c.sv[1]?2:0},{k:L?'Will':'İrade',v:sg(sv35(2,'wis')),dot:c.sv[2]?2:0}]);
+    var sk=[];
+    S35.forEach(function(s){var rk=S.ranks[s[0]]||0;if(rk>0)sk.push({k:s[2+L],sub:ABS[s[1]][L],v:sg(rk+mod[s[1]]),dot:c.cs.indexOf(s[0])>=0?2:0,x:rk+' '+(L?'ranks':'derece')});});
+    block(u('skillsT')+' ('+ranksSpent()+'/'+ranksTotal()+')','kv',sk);
+    var fl=S.feats.filter(Boolean).map(function(n){var ft=F35.filter(function(x){return x[0]===n;})[0];return {t:ft?ft[0]+(L?'':' · '+ft[1]):n,s:ft?ft[L?3:2]:''};});
+    block(L?'Feats':'Feat\'ler','list',fl);
+    var fc=[{t:(L?'Hit die: d':'Can zarı: d')+c.hd},{t:(L?'Skill points/level: ':'Seviye başına beceri puanı: ')+ptsPerLevel()},{t:D35[c.id][L]}];
+    if(c.sa)fc.push({t:(L?'Spell DC: 10 + spell level + ':'Büyü ZS: 10 + büyü seviyesi + ')+ABS[c.sa][L]+' ('+sg(mod[c.sa])+')'});
+    block(u('feat'),'list',fc);
+    block(u('racial'),'list',feats(r.tr));
+  }
+  if(K==='4e'){
+    var h2=Math.floor(lv/2),hp=hpTotal(),bo=r.bonus||{},rdf=r.df||{};
+    var tr=S.sk.cls||[];
+    tile('HP',hp);
+    tile(L?'Surges':'İyileşme',c.sg+mod.con,(L?'value ':'değer ')+Math.floor(hp/4));
+    tile('AC',10+h2+Math.max(mod.dex,mod.int));
+    tile('Fort',10+h2+Math.max(mod.str,mod.con)+c.df.fort+(rdf.fort||0));
+    tile('Ref',10+h2+Math.max(mod.dex,mod.int)+c.df.ref+(rdf.ref||0));
+    tile('Will',10+h2+Math.max(mod.wis,mod.cha)+c.df.will+(rdf.will||0));
+    tile(L?'Initiative':'Girişim',sg(mod.dex+h2));
+    tile(L?'Speed':'Hız',r.spd+' '+(L?'sq':'kare'),'('+mvTxt(r.spd*5)+')',true);
+    tile(L?'Gold':'Altın',goldVal()+' gp','',true);
+    block(u('skillsT'),'kv',S4.map(function(s){var t=tr.indexOf(s[0])>=0;return {k:s[2+L],sub:ABS[s[1]][L],v:sg(mod[s[1]]+h2+(t?5:0)+(bo[s[0]]||0)),dot:t?2:0};}));
+    block(L?'Role & source':'Rol ve kaynak','list',[{t:c.role[L]+' · '+c.src[L]},{t:c.d[L]}]);
+    block(u('feat'),'list',feats(c.f));
+    block(u('racial'),'list',feats(r.tr));
+  }
+  if(K==='5e'||K==='5e24'){
+    var pb=2+Math.floor((lv-1)/4),prof=skillGroups().fixed.slice();
+    Object.keys(S.sk).forEach(function(k){prof=prof.concat(S.sk[k]);});
+    var ac=10+mod.dex+(c.id==='barbarian'?mod.con:c.id==='monk'?mod.wis:0);
+    var sp=(sub&&sub.spd)||r.spd;
+    var skv=function(s){return mod[s[1]]+(prof.indexOf(s[0])>=0?pb:0);};
+    var perc=S5.filter(function(s){return s[0]==='perception';})[0];
+    tile('HP',hpTotal());
+    tile('AC',ac,c.id==='barbarian'||c.id==='monk'?(L?'unarmored':'zırhsız'):(L?'no armor':'zırhsız'));
+    tile(L?'Initiative':'Girişim',sg(mod.dex));
+    tile(L?'Speed':'Hız',mvTxt(sp),'',true);
+    tile(L?'Proficiency':'Yeterlilik',sg(pb));
+    tile(L?'Passive Perc.':'Pasif Algı',10+skv(perc),'',true);
+    tile(L?'Hit dice':'Can zarı',lv+'d'+c.hd,'',true);
+    if(c.sc){
+      tile(L?'Spell DC':'Büyü ZS',8+pb+mod[c.sc],ABS[c.sc][L]);
+      tile(L?'Spell atk':'Büyü saldırı',sg(pb+mod[c.sc]));
+    }
+    block(u('saves'),'kv',AB.map(function(a){var p=c.sv.indexOf(a)>=0;return {k:ABN[a][L],v:sg(mod[a]+(p?pb:0)),dot:p?2:0};}));
+    block(u('skillsT'),'kv',S5.map(function(s){return {k:s[2+L],sub:ABS[s[1]][L],v:sg(skv(s)),dot:prof.indexOf(s[0])>=0?2:0};}));
+    var sl=[];
+    if(c.sc){
+      var cn=c.cant||0;if(cn){cn+=(lv>=4?1:0)+(lv>=10?1:0);sl.push({t:(L?'Cantrips known: ':'Bilinen hile (cantrip): ')+cn});}
+      if(c.id==='warlock'){var ps=pactSlots(lv);sl.push({t:(L?'Pact slots: ':'Pakt yuvaları: ')+ps.n+' × '+(L?'level ':'seviye ')+ps.l});}
+      else{var s2=slotsFor(c);if(s2.length)sl.push({t:u('slots')+': '+s2.map(function(n,i){return (i+1)+'. → '+n;}).join('  ')});else sl.push({t:L?'Spellcasting begins at level 2':'Büyücülük 2. seviyede başlar'});}
+      block(u('spell'),'list',sl);
+    }
+    var fl2=feats(c.f);
+    if(K==='5e24'&&b)fl2.unshift({t:(L?'Origin feat: ':'Köken feat\'i: ')+b.feat});
+    block(u('feat'),'list',fl2);
+    var rt=(r.tr||[]).slice();if(sub)rt=rt.concat(sub.tr||[]);
+    block(u('racial'),'list',feats(rt));
+    block(u('equip'),'list',feats(e.eq[c.id]));
+  }
+  return M;
+}
+function toText(M){
+  var t=[];
+  t.push((S.name||u('unnamed')));
+  t.push(M.sub.join(' · ')+'  ['+M.badge+']');
+  t.push('');
+  t.push(M.ab.map(function(a){return a.k+' '+a.score+(a.mod!==null?' ('+sg(a.mod)+')':'');}).join('  |  '));
+  t.push(M.tiles.map(function(x){return x.l+' '+x.v+(x.s?' ('+x.s+')':'');}).join('  |  '));
+  M.blocks.forEach(function(bk){
+    t.push('');t.push('== '+bk.h+' ==');
+    bk.items.forEach(function(i){
+      if(bk.type==='kv')t.push((i.dot?'[x] ':'')+i.k+': '+i.v);
+      else t.push('- '+i.t+(i.s?' ('+i.s+')':''));
+    });
+  });
+  M.warn.forEach(function(w){t.push('! '+w);});
+  return t.join('\n');
+}
+
+/* ---------- ui helpers ---------- */
+var tab='build',mem=[];
+var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+function getSaves(){var s=store.get('dndworkshop.saves');if(s){try{return JSON.parse(s)||[];}catch(e){}}return mem;}
+function putSaves(a){mem=a;store.set('dndworkshop.saves',JSON.stringify(a));}
+var toastT=null;
+function toast(msg){var t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2200);}
+function flavor(){var r=gRace(),c=gCls();return r?r.fl:(c&&c.fl)||'human';}
+function modsTxt(m){var o=[];for(var k in m){if(m[k])o.push(ABS[k][L]+' '+sg(m[k]));}return o.length?' ('+o.join(', ')+')':'';}
+function selHtml(act,opts,val){
+  return '<select id="f-'+act+'" data-a="'+act+'">'+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(String(o[0])===String(val)?' selected':'')+'>'+esc(o[1])+'</option>';}).join('')+'</select>';
+}
+function diceBtn(act,extra,cls){return '<button type="button" class="dice'+(cls?' '+cls:'')+'" id="d-'+act+(extra?'-'+extra:'')+'" data-a="'+act+'"'+(extra?' data-ab="'+extra+'"':'')+' title="'+esc(u('random'))+'" aria-label="'+esc(u('random'))+'">'+DICE+'</button>';}
+function fld(id,label,inner,hint){return '<div class="fld"><label for="'+id+'">'+label+'</label>'+inner+(hint?'<p class="hint">'+hint+'</p>':'')+'</div>';}
+function skName(id){var l=E().skills||[];for(var i=0;i<l.length;i++)if(l[i][0]===id)return l[i][2+L];return id;}
+function abOpts(list){return list.map(function(a){return [a,ABN[a][L]];});}
+
+/* ---------- build pane ---------- */
+function abRows(){
+  var e=E(),f=finals(),rb=raceBonus(),m=S.method,h='',arr=ARR[S.ed]||[];
+  var lblB=e.kind==='5e24'?u('bg2'):u('race2');
+  AB.forEach(function(a){
+    var bv=S.base[a],ctrl='';
+    if(m==='roll3'||m==='roll4')ctrl='<span class="step"><b>'+bv+'</b></span>'+diceBtn('abRoll',a,'sm');
+    else if(m==='array'){var vals=arr.slice();if(vals.indexOf(bv)<0)vals.push(bv);vals.sort(function(x,y){return y-x;});ctrl='<select id="sa-'+a+'" data-a="abSet" data-ab="'+a+'" aria-label="'+ABN[a][L]+'">'+vals.map(function(v){return '<option value="'+v+'"'+(v===bv?' selected':'')+'>'+v+'</option>';}).join('')+'</select>';}
+    else if(m==='buy'){var T=costTbl(),b0=bounds(),canP=bv<b0[1]&&(buySpent()-T[bv]+T[bv+1]<=e.buyPts),canM=bv>b0[0];
+      ctrl='<span class="step"><button type="button" id="bm-'+a+'" data-a="buy" data-ab="'+a+'" data-v="-1"'+(canM?'':' disabled')+' aria-label="−">−</button><b>'+bv+'</b><button type="button" id="bp-'+a+'" data-a="buy" data-ab="'+a+'" data-v="1"'+(canP?'':' disabled')+' aria-label="+">+</button></span>';}
+    else{var b1=bounds();ctrl='<input type="number" id="sn-'+a+'" data-a="abSet" data-ab="'+a+'" min="'+b1[0]+'" max="'+b1[1]+'" value="'+bv+'" aria-label="'+ABN[a][L]+'">';}
+    var md=modOf(f[a]);
+    var tot='<b>'+f[a]+'</b>'+(e.modShow?'<i>'+sg(md)+'</i>':'');
+    var sub='<span>'+ABN[a][L]+'</span>'+(rb[a]?'<span>'+sg(rb[a])+' '+lblB+'</span>':'');
+    h+='<div class="ab"><span class="an">'+ABS[a][L]+'</span><div class="ctrl">'+ctrl+'</div><div class="tot">'+tot+'</div><div class="sub">'+sub+'</div></div>';
+  });
+  return h;
+}
+function renderBuild(){
+  var e=E(),c=gCls(),r=gRace(),sub=gSub(),b=gBg(),h='',K=e.kind;
+  h+='<div class="sec">'+fld('f-ed',u('edition'),'<select id="f-ed" data-a="ed" class="ed">'+ORDER.map(function(id){return '<option value="'+id+'"'+(id===S.ed?' selected':'')+'>'+esc(ED[id].n[L])+'</option>';}).join('')+'</select>',e.blurb[L]);
+  h+='<div class="acts"><button type="button" class="btn pri" id="b-randAll" data-a="randAll">'+DICE+u('randAll')+'</button></div></div>';
+  /* identity */
+  h+='<div class="sec"><h2>'+u('identity')+'</h2>';
+  h+=fld('f-name',u('name'),'<div class="row"><input type="text" id="f-name" data-a="name" value="'+esc(S.name)+'" placeholder="'+esc(u('namePh'))+'" maxlength="60" autocomplete="off">'+diceBtn('nameRoll')+'</div>');
+  if(e.lv[1]>1)h+='<div class="fld"><span class="lbl">'+u('level')+'</span><div class="step"><button type="button" id="lv-m" data-a="lvl" data-v="-1"'+(S.level<=e.lv[0]?' disabled':'')+' aria-label="−">−</button><b>'+S.level+'</b><button type="button" id="lv-p" data-a="lvl" data-v="1"'+(S.level>=e.lv[1]?' disabled':'')+' aria-label="+">+</button></div></div>';
+  else h+='<p class="hint">'+u('lvFixed')+'</p>';
+  h+=fld('f-align',u('align'),'<div class="row">'+selHtml('align',validAligns().map(function(a){return [a,AL[a][L]];}),S.align)+diceBtn('alignRoll')+'</div>');
+  h+='</div>';
+  /* race / class / bg */
+  h+='<div class="sec"><h2>'+(K==='bx'?u('cls'):(K==='5e24'?u('species'):u('race'))+' · '+u('cls'))+'</h2>';
+  if(e.races){
+    h+=fld('f-race',K==='5e24'?u('species'):u('race'),'<div class="row">'+selHtml('race',e.races.map(function(x){return [x.id,x.n[L]+(x.mods?modsTxt(x.mods):K==='4e'?' ('+x.opt.map(function(a){return ABS[a][L];}).join('/')+')':'')];}),S.race)+diceBtn('raceRoll')+'</div>');
+    if(r.sub)h+=fld('f-sub',u('sub'),selHtml('sub',r.sub.map(function(x){return [x.id,x.n[L]+modsTxt(x.mods)];}),S.sub));
+    if(K==='4e')h+=fld('f-r4',u('rbonus')+' (+2)',selHtml('r4',r.opt.map(function(a){return [a,ABN[a][L]];}),S.r4));
+    if(K==='5e'&&r.pick){
+      var ex=r.pick.ex;for(var i=0;i<r.pick.n;i++){var avail=AB.filter(function(a){return ex.indexOf(a)<0;});
+        h+='<div class="fld"><label for="f-rpick'+i+'">'+u('rbonus')+' +1 ('+(i+1)+')</label><select id="f-rpick'+i+'" data-a="rpick" data-i="'+i+'">'+avail.map(function(a){return '<option value="'+a+'"'+(S.rpick[i]===a?' selected':'')+'>'+ABN[a][L]+'</option>';}).join('')+'</select></div>';}
+    }
+  }
+  h+=fld('f-cls',K==='bx'?e.clsLabel[L]:u('cls'),'<div class="row">'+selHtml('cls',validClasses().map(function(x){return [x.id,x.n[L]];}),S.cls)+diceBtn('clsRoll')+'</div>',c.d[L]);
+  if(e.bgs){
+    h+=fld('f-bg',u('bg'),'<div class="row">'+selHtml('bg',e.bgs.map(function(x){return [x.id,x.n[L]];}),S.bg)+diceBtn('bgRoll')+'</div>',K==='5e24'?(L?'Origin feat: ':'Köken feat\'i: ')+b.feat:null);
+    if(K==='5e24'){
+      h+='<div class="fld"><span class="lbl">'+u('bgAsi')+'</span><div class="chips">'+[['21',u('bgMode21')],['111',u('bgMode111')]].map(function(m){return '<button type="button" class="chip" id="bm-'+m[0]+'" data-a="bgMode" data-v="'+m[0]+'" aria-pressed="'+(S.bgMode===m[0])+'">'+m[1]+'</button>';}).join('')+'</div></div>';
+      if(S.bgMode==='21'){
+        h+=fld('f-bgA',u('plus2'),selHtml('bgA',abOpts(b.ab),S.bgA));
+        h+=fld('f-bgB',u('plus1'),selHtml('bgB',abOpts(b.ab.filter(function(a){return a!==S.bgA;})),S.bgB));
+      }
+    }
+  }
+  h+='</div>';
+  /* abilities */
+  var pts=S.method==='buy'?'<span class="pts">'+(e.buyPts-buySpent())+'/'+e.buyPts+' '+u('left')+'</span>':'';
+  h+='<div class="sec"><h2><span>'+u('abilities')+'</span>'+pts+'</h2>';
+  h+=fld('f-method',u('method'),selHtml('method',e.methods.map(function(m){return [m,u('m_'+m)];}),S.method));
+  if(S.method==='array'){var sa=AB.map(function(a){return S.base[a];}).sort().join(),ar=(ARR[S.ed]||[]).slice().sort().join();if(sa!==ar)h+='<p class="warn">'+(L?'Each value of the standard array must be used once.':'Standart dizideki her değer bir kez kullanılmalı.')+'</p>';}
+  h+=abRows();
+  h+='<div class="acts" style="margin-top:12px">';
+  if(S.method==='roll3'||S.method==='roll4')h+='<button type="button" class="btn" id="b-abAll" data-a="abAll">'+DICE+u('rollAll')+'</button>';
+  h+='<button type="button" class="btn" id="b-abAuto" data-a="abAuto">'+u('suggest')+'</button></div></div>';
+  /* hp */
+  if(K==='bx'||K==='2e'){h+='<div class="sec"><h2>'+u('hp')+'</h2><div class="row"><span class="lbl">d'+hdOf()+': <b>'+S.hp1+'</b></span><button type="button" class="btn" id="b-hpRe" data-a="hpRe">'+DICE+u('hpReroll')+'</button></div></div>';}
+  else if(K!=='4e'&&S.level>1){h+='<div class="sec"><h2>'+u('hp')+'</h2>'+fld('f-hpMode',u('hpMode'),'<div class="row">'+selHtml('hpMode',[['fixed',L?'Average':'Ortalama'],['roll',u('hpRoll')]],S.hpMode)+(S.hpMode==='roll'?'<button type="button" class="btn" id="b-hpRe" data-a="hpRe">'+DICE+'</button>':'')+'</div>')+'</div>';}
+  /* skills */
+  if(K==='3.5'){
+    var left=ranksLeft(),cap=ranksCap();
+    h+='<div class="sec"><h2><span>'+u('skills')+'</span><span class="pts">'+left+'/'+ranksTotal()+'</span></h2>';
+    if(left<0)h+='<p class="warn">'+u('warnSk')+'</p>';
+    S35.forEach(function(s){
+      var isC=c.cs.indexOf(s[0])>=0,rk=S.ranks[s[0]]||0,mx=isC?cap:Math.floor(cap/2),cost=isC?1:2;
+      h+='<div class="kv"><span class="dot'+(isC?' on':'')+'" title="'+(isC?(L?'class skill':'sınıf becerisi'):(L?'cross-class':'çapraz sınıf'))+'"></span><span class="k">'+s[2+L]+'<small>'+ABS[s[1]][L]+'</small></span><span class="step"><button type="button" id="rm-'+s[0]+'" data-a="rank" data-s="'+s[0]+'" data-v="-1"'+(rk>0?'':' disabled')+' aria-label="−">−</button><b>'+rk+'</b><button type="button" id="rp-'+s[0]+'" data-a="rank" data-s="'+s[0]+'" data-v="1"'+(rk<mx&&left>=cost?'':' disabled')+' aria-label="+">+</button></span></div>';
+    });
+    h+='<p class="hint" style="margin-top:8px">'+(L?'Filled dot = class skill (1 point per rank). Others cost 2 points and reach half the max rank.':'Dolu nokta = sınıf becerisi (derece başı 1 puan). Diğerleri 2 puan ve en çok yarı derece.')+'</p></div>';
+    h+='<div class="sec"><h2>'+(L?'Feats':'Feat\'ler')+'</h2>';
+    S.feats.forEach(function(ft,i){h+=fld('f-feat'+i,(L?'Feat ':'Feat ')+(i+1),'<select id="f-feat'+i+'" data-a="feat" data-i="'+i+'"><option value="">—</option>'+F35.map(function(x){return '<option value="'+esc(x[0])+'"'+(x[0]===ft?' selected':'')+'>'+esc(L?x[0]:x[1]+' · '+x[0])+'</option>';}).join('')+'</select>');});
+    h+='</div>';
+  }else{
+    var sg2=skillGroups();
+    if(sg2.groups.length){
+      h+='<div class="sec"><h2>'+u('skills')+'</h2>';
+      var taken=function(id,key){var t=sg2.fixed.indexOf(id)>=0;Object.keys(S.sk).forEach(function(k){if(k!==key&&S.sk[k].indexOf(id)>=0)t=true;});return t;};
+      sg2.groups.forEach(function(g){
+        var cur=S.sk[g.key]||[],full=cur.length>=g.n;
+        h+='<div class="fld"><span class="lbl">'+g.l+' ('+cur.length+'/'+g.n+')</span><div class="chips">'+g.list.map(function(id){var on=cur.indexOf(id)>=0,dis=!on&&(full||taken(id,g.key));return '<button type="button" class="chip" id="sk-'+g.key+'-'+id+'" data-a="sk" data-g="'+g.key+'" data-s="'+id+'" aria-pressed="'+on+'"'+(dis?' disabled':'')+'>'+skName(id)+'</button>';}).join('')+'</div></div>';
+      });
+      if(sg2.fixed.length)h+='<div class="fld"><span class="lbl">'+u('fromBg')+'</span><div class="chips">'+sg2.fixed.map(function(id){return '<span class="chip lock">'+skName(id)+'</span>';}).join('')+'</div></div>';
+      h+='</div>';
+    }
+  }
+  $('#buildPane').innerHTML=h;
+}
+function renderStatic(){
+  $('#appName').textContent=u('app');$('#appTag').textContent=u('tag');
+  var tb=document.querySelectorAll('#themeSeg button');tb[0].textContent=u('light');tb[1].textContent=u('dark');
+  var tt=document.querySelectorAll('#tabs button');tt[0].textContent=u('tabBuild');tt[1].textContent=u('tabSheet');
+  tt[0].setAttribute('aria-pressed',tab==='build');tt[1].setAttribute('aria-pressed',tab==='sheet');
+  $('#shell').setAttribute('data-tab',tab);
+  document.querySelectorAll('#langSeg button').forEach(function(x){x.setAttribute('aria-pressed',String(x.getAttribute('data-lang'))===String(L));});
+  $('#foot').textContent=u('disc');document.title=u('app');document.documentElement.lang=L?'en':'tr';
+  var cur=document.documentElement.getAttribute('data-theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  tb[0].setAttribute('aria-pressed',cur==='light');tb[1].setAttribute('aria-pressed',cur==='dark');
+}
+function render(){normalize();renderStatic();renderBuild();renderSheet();}
+
+/* ---------- extra strings ---------- */
+Object.assign(UI,{
+exp:['Dışa aktar','Export'],imp:['İçe aktar','Import'],
+page1:['Karakter','Character'],page2:['Hikâye ve görünüm','Story & looks'],page3:['Büyüler','Spells'],page3p:['Güçler','Powers'],
+player:['Oyuncu adı','Player name'],xp:['Deneyim puanı','Experience points'],classLevel:['Sınıf ve seviye','Class & level'],
+insp:['İlham','Inspiration'],hpMax:['Azami can','Hit point maximum'],hpCur:['Mevcut can','Current HP'],hpTmp:['Geçici can','Temp HP'],
+hitDice:['Can zarı','Hit dice'],death:['Ölüm kurtarmaları','Death saves'],succ:['Başarı','Successes'],fail:['Başarısızlık','Failures'],
+attacks:['Saldırılar','Attacks'],atkName:['Ad','Name'],atkBonus:['Saldırı','Atk'],atkDmg:['Hasar / tür','Damage / type'],
+equipT2:['Ekipman','Equipment'],coins:['Para','Coins'],resetDef:['Varsayılana dön','Reset to default'],
+traits:['Kişilik özellikleri','Personality traits'],ideals:['İdealler','Ideals'],bonds:['Bağlar','Bonds'],flaws:['Kusurlar','Flaws'],
+featT2:['Özellikler ve nitelikler','Features & traits'],otherProf:['Diğer yeterlilikler ve diller','Other proficiencies & languages'],
+age:['Yaş','Age'],height:['Boy','Height'],weight:['Kilo','Weight'],eyes:['Gözler','Eyes'],skin:['Ten','Skin'],hair:['Saç','Hair'],
+appearance:['Karakter görünümü','Character appearance'],backstory:['Karakter hikâyesi','Character backstory'],
+allies:['Müttefikler ve örgütler','Allies & organizations'],addFeat:['Ek özellikler ve nitelikler','Additional features & traits'],treasure:['Hazine','Treasure'],
+addImg:['Resim ekle','Add image'],delImg:['Resmi kaldır','Remove image'],noImg:['Henüz resim yok','No image yet'],
+spCls:['Büyücülük sınıfı','Spellcasting class'],spAb:['Büyü yeteneği','Spellcasting ability'],spDc:['Büyü kurtarma ZS','Spell save DC'],spAtk:['Büyü saldırı bonusu','Spell attack bonus'],
+slotT:['Toplam','Total'],slotE:['Kullanılan','Used'],known:['Bilinen','Known'],cantrips:['Hileler (cantrip)','Cantrips'],spLevel:['Büyü seviyesi','Spell level'],
+spellsHint:['Her satıra bir büyü yazın.','Write one spell per line.'],noCaster:['Bu sınıf 1. seviyede büyü kullanmaz; yuvaları elle girebilirsiniz.','This class has no spells at this level; you can still enter slots by hand.'],
+pwAw:['Sınırsız (At-Will)','At-Will'],pwEn:['Karşılaşma (Encounter)','Encounter'],pwDa:['Günlük (Daily)','Daily'],pwUt:['Yardımcı (Utility)','Utility'],
+expT:['Karakteri dışa aktar','Export character'],impT:['Karakteri içe aktar','Import character'],
+expHint:['Resim ve tüm alanlar bu JSON içinde. İndirme çalışmazsa metni kopyalayıp .json dosyası olarak kaydedin.','Image and all fields are inside this JSON. If download does not work, copy the text and save it as a .json file.'],
+dl:['Dosya olarak indir','Download file'],impHint:['Bir .json dosyası seçin ya da dışa aktarılmış metni yapıştırın.','Pick a .json file or paste exported text.'],
+impGo:['İçe aktar','Import'],impBad:['Geçersiz karakter dosyası','Invalid character file'],impOk:['Karakter içe aktarıldı','Character imported'],
+tImg:['Resim eklendi','Image added'],imgBad:['Resim okunamadı','Could not read the image'],tDl:['İndirme başlatıldı','Download started'],
+ctrAb:['Yakın','Melee'],
+disc:['Resmî olmayan hayran aracıdır. Dungeons & Dragons, Wizards of the Coast\'un tescilli markasıdır; bu proje onunla bağlantılı değildir.','Unofficial fan tool. Dungeons & Dragons is a trademark of Wizards of the Coast; this project is not affiliated with them.']
+});
+
+/* ---------- details ---------- */
+function newDet(){return {player:'',xp:'0',age:'',height:'',weight:'',eyes:'',skin:'',hair:'',img:'',insp:false,hpCur:'',hpTmp:'',ds:{s:[false,false,false],f:[false,false,false]},
+ atk:[{n:'',b:'',d:''},{n:'',b:'',d:''},{n:'',b:'',d:''}],equip:'',eqEd:false,coins:{cp:'',sp:'',ep:'',gp:'',pp:''},coinsEd:false,
+ traits:'',ideals:'',bonds:'',flaws:'',feats:'',prof:'',appearance:'',backstory:'',allies:'',extra:'',treasure:'',spCls:'',slots:{},spells:{}};}
+function ensureDet(){
+  var d=newDet(),o=S.det||{};
+  Object.keys(d).forEach(function(k){if(o[k]===undefined||o[k]===null)o[k]=d[k];});
+  if(!o.ds||!o.ds.s||!o.ds.f)o.ds=d.ds;
+  if(typeof o.img!=='string'||!/^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(o.img))o.img='';
+  ['player','xp','age','height','weight','eyes','skin','hair','hpCur','hpTmp','equip','traits','ideals','bonds','flaws','feats','prof','appearance','backstory','allies','extra','treasure','spCls'].forEach(function(k){if(typeof o[k]!=='string')o[k]=o[k]==null?'':String(o[k]);});
+  if(!o.coins||typeof o.coins!=='object')o.coins=d.coins;
+  ['cp','sp','ep','gp','pp'].forEach(function(k){o.coins[k]=o.coins[k]==null?'':String(o.coins[k]);});
+  o.atk=Array.isArray(o.atk)?o.atk.map(function(a){a=a&&typeof a==='object'?a:{};return {n:String(a.n==null?'':a.n),b:String(a.b==null?'':a.b),d:String(a.d==null?'':a.d)};}):d.atk;
+  while(o.atk.length<3)o.atk.push({n:'',b:'',d:''});
+  if(!o.slots||typeof o.slots!=='object')o.slots={};
+  if(!o.spells||typeof o.spells!=='object')o.spells={};
+  Object.keys(o.spells).forEach(function(k){o.spells[k]=String(o.spells[k]==null?'':o.spells[k]);});
+  Object.keys(o.slots).forEach(function(k){var v=o.slots[k];if(!v||typeof v!=='object'){delete o.slots[k];return;}['t','e'].forEach(function(f){if(v[f]!=null)v[f]=String(v[f]);});});
+  S.det=o;
+}
+function setPath(o,path,val){
+  var p=path.split('.'),cur=o;
+  for(var i=0;i<p.length-1;i++){if(cur[p[i]]==null||typeof cur[p[i]]!=='object')cur[p[i]]={};cur=cur[p[i]];}
+  cur[p[p.length-1]]=val;
+}
+function getPath(o,path){var p=path.split('.'),cur=o;for(var i=0;i<p.length;i++){if(cur==null)return '';cur=cur[p[i]];}return cur==null?'':cur;}
+
+/* ---------- derived extras ---------- */
+function slots35(id,lv,mAb){
+  var W=[[3,1],[4,2],[4,2,1],[4,3,2],[4,3,2,1],[4,3,3,2],[4,4,3,2,1],[4,4,3,3,2],[4,4,4,3,2,1],[4,4,4,3,3,2],[4,4,4,4,3,2,1],[4,4,4,4,3,3,2],[4,4,4,4,4,3,2,1],[4,4,4,4,4,3,3,2],[4,4,4,4,4,4,3,2,1],[4,4,4,4,4,4,3,3,2],[4,4,4,4,4,4,4,3,2,1],[4,4,4,4,4,4,4,3,3,2],[4,4,4,4,4,4,4,4,3,3],[4,4,4,4,4,4,4,4,4,4]];
+  var out=[0,0,0,0,0,0,0,0,0,0];
+  if(id==='wizard'||id==='cleric'||id==='druid'){W[lv-1].forEach(function(n,i){out[i]=n;});if(id==='cleric')for(var k=1;k<10;k++)if(out[k]>0)out[k]+=1;}
+  else if(id==='sorcerer'){out[0]=lv>=2?6:5;for(var n=1;n<=9;n++){var F=n===1?1:2*n;if(lv>=F)out[n]=Math.min(6,3+(lv-F));}if(lv>=20)out[9]=6;}
+  else return out;
+  for(var j=1;j<10;j++){if(out[j]>0&&mAb>=j)out[j]+=Math.floor((mAb-j)/4)+1;}
+  return out;
+}
+function spellInfo(){
+  var e=E(),K=e.kind,c=gCls(),f=finals(),lv=S.level,mod={};
+  AB.forEach(function(a){mod[a]=modOf(f[a]);});
+  var P={cls:'',ab:'—',dc:'—',atk:'—',levels:[],mode:'slots',caster:false};
+  var add=function(k,t,extra){var o={k:k,t:t};if(extra)for(var x in extra)o[x]=extra[x];P.levels.push(o);};
+  if(K==='5e'||K==='5e24'){
+    var pb=2+Math.floor((lv-1)/4);
+    if(c.sc){P.caster=true;P.cls=c.n[L];P.ab=ABN[c.sc][L];P.dc=String(8+pb+mod[c.sc]);P.atk=sg(pb+mod[c.sc]);}
+    var sl=c.sc&&c.id!=='warlock'?slotsFor(c):[];
+    var cn=c.sc&&c.cant?c.cant+(lv>=4?1:0)+(lv>=10?1:0):0;
+    add(0,cn,{known:true});
+    for(var i=1;i<=9;i++){var t=sl[i-1]||0;if(c.id==='warlock'){var ps=pactSlots(lv);t=i===ps.l?ps.n:0;}add(i,t);}
+  }else if(K==='3.5'){
+    if(c.sa){P.caster=true;P.cls=c.n[L];P.ab=ABN[c.sa][L];P.dc='10 + '+(L?'spell lvl':'büyü sv.')+' '+sg(mod[c.sa]);}
+    var a35=slots35(c.id,lv,c.sa?mod[c.sa]:0);
+    for(var k=0;k<=9;k++)add(k,a35[k]);
+  }else if(K==='bx'){
+    var cs=c.id==='mu'||c.id==='elf';
+    if(cs||c.id==='cleric'){P.caster=true;P.cls=c.n[L];P.ab=ABN[c.id==='cleric'?'wis':'int'][L];}
+    for(var b=1;b<=6;b++)add(b,(cs&&b===1)?1:0);
+  }else if(K==='2e'){
+    var g=c.g;
+    if(g==='wiz'||g==='pri'||c.id==='bard'){P.caster=true;P.cls=c.n[L];P.ab=ABN[g==='pri'?'wis':'int'][L];}
+    for(var m=1;m<=9;m++)add(m,m===1?(g==='wiz'?1:(c.id==='cleric'?1:(c.id==='druid'?2:0))):0);
+  }else if(K==='4e'){
+    P.mode='powers';P.caster=true;P.cls=c.src[L]+' · '+c.role[L];P.ab=c.pri.slice(0,2).map(function(a){return ABN[a][L];}).join(' / ');
+    var cnt=function(th){var n=0;th.forEach(function(x){if(lv>=x)n++;});return n;};
+    add('aw',2,{label:u('pwAw')});
+    add('en',1+cnt([3,7,13,17]),{label:u('pwEn')});
+    add('da',1+cnt([5,9,15,19]),{label:u('pwDa')});
+    add('ut',cnt([2,6,10,16]),{label:u('pwUt')});
+  }
+  return P;
+}
+function sheetExtra(){
+  var e=E(),K=e.kind,c=gCls(),r=gRace(),f=finals(),lv=S.level,mod={};
+  AB.forEach(function(a){mod[a]=modOf(f[a]);});
+  var X={atk:'',ins:false,death:false,hd:''};
+  var melee=L?'Melee ':'Yakın ',rng=L?'Ranged ':'Menzilli ';
+  if(K==='bx')X.atk='THAC0 19 · '+melee+sg(mod.str)+' · '+(L?'Missile ':'Menzilli ')+sg(mod.dex);
+  if(K==='2e'){var t=T2.str(f.str),d=T2.dex(f.dex);X.atk='THAC0 20 · '+melee+sg(t[0])+' / '+sg(t[1])+' · '+(L?'Missile ':'Menzilli ')+sg(d[1]);}
+  if(K==='3.5'){var bab=Math.floor(lv*(c.bab==='f'?1:c.bab==='m'?0.75:0.5)),sz=r.size||0;X.atk=melee+sg(bab+mod.str+sz)+' · '+rng+sg(bab+mod.dex+sz);}
+  if(K==='4e'){var h=Math.floor(lv/2);X.atk=melee+sg(h+mod.str)+' · '+rng+sg(h+mod.dex)+' ('+(L?'+ weapon prof/enh':'+ silah yeterliliği/büyü')+')';X.death=true;}
+  if(K==='5e'||K==='5e24'){var pb=2+Math.floor((lv-1)/4);X.atk=melee+sg(pb+mod.str)+' · '+rng+sg(pb+mod.dex);X.ins=true;X.death=true;}
+  if(K!=='4e')X.hd=(K==='bx'||K==='2e'?1:lv)+'d'+hdOf();
+  return X;
+}
+/* ---------- sheet render ---------- */
+var page='p1';
+function di(path,cls,attrs){return '<input type="text" class="'+(cls||'fi')+'" data-d="'+path+'" value="'+esc(getPath(S.det,path))+'"'+(attrs||'')+'>';}
+function dn2(path,cls,attrs){return '<input type="number" class="'+(cls||'fi')+'" data-d="'+path+'" value="'+esc(getPath(S.det,path))+'"'+(attrs||'')+'>';}
+function dta(path,cls,rows,ph){return '<textarea class="ta '+(cls||'')+'" data-d="'+path+'" rows="'+(rows||4)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'+esc(getPath(S.det,path))+'</textarea>';}
+function pnl(h,inner,cls){return '<div class="pnl'+(cls?' '+cls:'')+'"><h3>'+h+'</h3>'+inner+'</div>';}
+function kvRows(items){return items.map(function(i){return '<div class="kv">'+(i.dot===undefined?'':'<span class="dot'+(i.dot===2?' on':'')+'"></span>')+'<span class="k">'+esc(i.k)+(i.sub?'<small>'+esc(i.sub)+'</small>':'')+'</span><span class="v">'+esc(i.v)+'</span></div>';}).join('');}
+function listHtml(items){return items.length?'<ul class="lst">'+items.map(function(i){return '<li>'+esc(i.t)+(i.s?'<small>'+esc(i.s)+'</small>':'')+'</li>';}).join('')+'</ul>':'<p class="empty">—</p>';}
+function renderSheet(){
+  ensureDet();
+  var M=model(),X=sheetExtra(),det=S.det,e=E(),K=e.kind,c=gCls(),r=gRace(),b=gBg(),sub=gSub(),h='';
+  var hpTile=M.tiles.filter(function(t){return t.l==='HP';})[0],hpMax=hpTile?hpTile.v:'';
+  var tiles=M.tiles.filter(function(t){return t.l!=='HP';});
+  var bSv=null,bSk=null,bEq=null,others=[];
+  M.blocks.forEach(function(bk){
+    if(bk.h===u('saves'))bSv=bk;else if(bk.h.indexOf(u('skillsT'))===0)bSk=bk;else if(bk.h===u('equip'))bEq=bk;else others.push(bk);
+  });
+  if(!det.eqEd){
+    var lines=bEq?bEq.items.map(function(i){return i.t;}):[];
+    det.equip=lines.join('\n');
+  }
+  var gv=goldVal();
+  if(!det.coinsEd){det.coins.gp=gv!=null?String(gv):'';}
+  /* header */
+  h+='<article class="sheet"><div class="sh-head"><div class="sh-id">'+(det.img?'<img class="avatar" alt="" src="'+esc(det.img)+'">':'')+'<div style="min-width:0"><h2'+(S.name?'':' class="ph"')+'>'+esc(S.name||u('unnamed'))+'</h2><p class="sh-sub">'+esc(M.sub.join(' · '))+'</p></div></div><span class="badge">'+esc(M.badge)+'</span></div>';
+  h+='<div class="sh-actions"><button type="button" class="btn pri" id="a-save" data-a="save">'+u('save')+'</button><button type="button" class="btn" id="a-saved" data-a="saved">'+u('saved')+'</button><button type="button" class="btn" id="a-exp" data-a="export">'+u('exp')+'</button><button type="button" class="btn" id="a-imp" data-a="import">'+u('imp')+'</button><button type="button" class="btn" id="a-copy" data-a="copy">'+u('copy')+'</button></div>';
+  h+='<div class="pg" role="group">'+[['p1',u('page1')],['p2',u('page2')],['p3',K==='4e'?u('page3p'):u('page3')]].map(function(p){return '<button type="button" id="pg-'+p[0]+'" data-a="page" data-v="'+p[0]+'" aria-pressed="'+(page===p[0])+'">'+p[1]+'</button>';}).join('')+'</div>';
+  M.warn.forEach(function(w){h+='<p class="warn">'+esc(w)+'</p>';});
+  if(page==='p1'){
+    var cl2=c.n[L]+(e.lv[1]>1?' '+S.level:'');
+    h+='<div class="info"><div><span class="l">'+u('classLevel')+'</span><span class="v">'+esc(cl2)+'</span></div>'+(b?'<div><span class="l">'+u('bg')+'</span><span class="v">'+esc(b.n[L])+'</span></div>':'')+'<div><span class="l">'+u('player')+'</span>'+di('player')+'</div>';
+    h+='<div><span class="l">'+(K==='bx'?u('cls'):(K==='5e24'?u('species'):u('race')))+'</span><span class="v">'+esc(r?r.n[L]+(sub?' ('+sub.n[L]+')':''):c.n[L])+'</span></div><div><span class="l">'+u('align')+'</span><span class="v">'+esc(AL[S.align][L])+'</span></div><div><span class="l">'+u('xp')+'</span>'+di('xp')+'</div></div>';
+    h+='<div class="p1"><div class="lcol"><div class="abils">'+M.ab.map(function(a){
+      return '<div class="abx"><div class="l">'+a.k+'</div><div class="m">'+(a.mod!==null?sg(a.mod):a.score)+'</div>'+(a.mod!==null?'<span class="s">'+a.score+'</span>':'')+(a.x?'<div class="x">'+esc(a.x)+'</div>':'')+'</div>';
+    }).join('')+'</div>';
+    if(X.ins)h+='<label class="pill" for="d-insp"><span>'+u('insp')+'</span><input type="checkbox" id="d-insp" data-d="insp"'+(det.insp?' checked':'')+'></label>';
+    if(bSv)h+=pnl(bSv.h,kvRows(bSv.items));
+    if(bSk)h+=pnl(bSk.h,kvRows(bSk.items));
+    h+='</div><div class="rcol">';
+    h+='<div class="tiles">'+tiles.map(function(t){return '<div class="tile"><div class="l">'+esc(t.l)+'</div><div class="v'+(t.sm?' sm':'')+'">'+esc(t.v)+'</div>'+(t.s?'<div class="s">'+esc(t.s)+'</div>':'')+'</div>';}).join('')+'</div>';
+    h+='<div class="hps"><div class="pnl"><h3>'+u('hpMax')+'</h3><div class="big">'+esc(hpMax)+'</div></div><div class="pnl"><h3>'+u('hpCur')+'</h3>'+dn2('hpCur','big',' placeholder="'+esc(hpMax)+'"')+'</div><div class="pnl"><h3>'+u('hpTmp')+'</h3>'+dn2('hpTmp','big',' placeholder="0"')+'</div></div>';
+    if(X.hd||X.death){
+      h+='<div class="hps">'+(X.hd?'<div class="pnl"><h3>'+u('hitDice')+'</h3><div class="big" style="font-size:24px">'+esc(X.hd)+'</div></div>':'');
+      if(X.death)h+='<div class="pnl"><h3>'+u('death')+'</h3><div class="ds"><span>'+u('succ')+'</span>'+[0,1,2].map(function(i){return '<input type="checkbox" id="ds-s'+i+'" data-d="ds.s.'+i+'"'+(det.ds.s[i]?' checked':'')+' aria-label="'+u('succ')+' '+(i+1)+'">';}).join('')+'</div><div class="ds"><span>'+u('fail')+'</span>'+[0,1,2].map(function(i){return '<input type="checkbox" id="ds-f'+i+'" data-d="ds.f.'+i+'"'+(det.ds.f[i]?' checked':'')+' aria-label="'+u('fail')+' '+(i+1)+'">';}).join('')+'</div></div>';
+      h+='</div>';
+    }
+    h+=pnl(u('attacks'),'<p class="tiny" style="margin:0 0 8px">'+esc(X.atk)+'</p><div class="atk"><span class="h">'+u('atkName')+'</span><span class="h">'+u('atkBonus')+'</span><span class="h">'+u('atkDmg')+'</span></div>'+[0,1,2].map(function(i){return '<div class="atk">'+di('atk.'+i+'.n','',' aria-label="'+u('atkName')+'"')+di('atk.'+i+'.b','',' aria-label="'+u('atkBonus')+'"')+di('atk.'+i+'.d','',' aria-label="'+u('atkDmg')+'"')+'</div>';}).join(''));
+    h+=pnl(u('equipT2'),dta('equip','',6)+'<div class="coins">'+['cp','sp','ep','gp','pp'].map(function(k){return '<label>'+k+di('coins.'+k,'','',' ')+'</label>';}).join('')+'</div><div class="acts" style="margin-top:8px"><button type="button" class="btn" id="a-eqreset" data-a="eqReset">'+u('resetDef')+'</button></div>');
+    h+='</div></div>';
+    h+='<div class="g2">'+pnl(u('traits'),dta('traits','',4))+pnl(u('ideals'),dta('ideals','',4))+pnl(u('bonds'),dta('bonds','',4))+pnl(u('flaws'),dta('flaws','',4))+'</div>';
+    h+='<div class="g2">';
+    others.forEach(function(bk){h+=pnl(esc(bk.h),bk.type==='kv'?kvRows(bk.items):listHtml(bk.items));});
+    h+=pnl(u('featT2'),dta('feats','',6))+pnl(u('otherProf'),dta('prof','',6))+'</div>';
+  }
+  if(page==='p2'){
+    h+='<div class="info"><div><span class="l">'+u('age')+'</span>'+di('age')+'</div><div><span class="l">'+u('height')+'</span>'+di('height')+'</div><div><span class="l">'+u('weight')+'</span>'+di('weight')+'</div><div><span class="l">'+u('eyes')+'</span>'+di('eyes')+'</div><div><span class="l">'+u('skin')+'</span>'+di('skin')+'</div><div><span class="l">'+u('hair')+'</span>'+di('hair')+'</div></div>';
+    var pt='<div class="portrait">'+(det.img?'<img alt="" src="'+esc(det.img)+'">':'<div class="ph-box">'+u('noImg')+'</div>')+'<div class="acts"><label class="btn" for="f-img" style="cursor:pointer">'+u('addImg')+'</label><input type="file" id="f-img" data-a="img" accept="image/*" hidden>'+(det.img?'<button type="button" class="btn" id="a-imgdel" data-a="imgDel">'+u('delImg')+'</button>':'')+'</div></div>';
+    h+='<div class="g2">'+pnl(u('appearance'),pt+dta('appearance','',5))+pnl(u('allies'),dta('allies','tall',10))+'</div>';
+    h+='<div class="g2">'+pnl(u('backstory'),dta('backstory','tall',14))+'<div style="display:grid;gap:12px;align-content:start">'+pnl(u('addFeat'),dta('extra','',8))+pnl(u('treasure'),dta('treasure','',8))+'</div></div>';
+  }
+  if(page==='p3'){
+    var P=spellInfo();
+    h+='<div class="info"><div><span class="l">'+u('spCls')+'</span><input type="text" class="fi" data-d="spCls" value="'+esc(det.spCls||P.cls)+'"></div><div><span class="l">'+u('spAb')+'</span><span class="v">'+esc(P.ab)+'</span></div><div><span class="l">'+u('spDc')+'</span><span class="v">'+esc(P.dc)+'</span></div><div><span class="l">'+u('spAtk')+'</span><span class="v">'+esc(P.atk)+'</span></div></div>';
+    if(!P.caster)h+='<p class="hint" style="margin-top:10px">'+u('noCaster')+'</p>';
+    h+='<div class="spg">'+P.levels.map(function(lv2){
+      var key=String(lv2.k),sl=det.slots[key]||{},tv=sl.t!=null?sl.t:lv2.t,ev=sl.e!=null?sl.e:'';
+      var title=lv2.label||(lv2.known?u('cantrips'):u('spLevel')+' '+lv2.k);
+      var badge=lv2.label?lv2.label.charAt(0):lv2.k;
+      var ins='<label>'+(lv2.known?u('known'):u('slotT'))+'<input type="number" min="0" data-d="slots.'+key+'.t" value="'+esc(tv)+'"></label>';
+      if(!lv2.known&&P.mode!=='powers')ins+='<label>'+u('slotE')+'<input type="number" min="0" data-d="slots.'+key+'.e" value="'+esc(ev)+'"></label>';
+      return pnl(title,'<div class="sph"><span class="n">'+esc(badge)+'</span><span class="t"></span>'+ins+'</div>'+dta('spells.'+key,'ln',6));
+    }).join('')+'</div><p class="tiny">'+u('spellsHint')+'</p>';
+  }
+  h+='</article>';
+  $('#sheetPane').innerHTML=h;
+}
+/* ---------- export / import ---------- */
+function exportJson(){return JSON.stringify({app:'dnd-character-workshop',version:2,exported:new Date().toISOString(),character:S});}
+function openExport(){
+  openPanel('<h2>'+u('expT')+'</h2><p class="hint">'+u('expHint')+'</p><textarea id="cpTxt" readonly>'+esc(exportJson())+'</textarea><div class="acts" style="margin-top:12px"><button type="button" class="btn pri" data-a="dlJson">'+u('dl')+'</button><button type="button" class="btn" data-a="doCopy">'+u('copyBtn')+'</button><button type="button" class="btn" data-a="close">'+u('close')+'</button></div>');
+}
+function doDownload(){
+  try{
+    var blob=new Blob([exportJson()],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    var nm=(S.name||'character').toLowerCase().replace(/[^a-z0-9çğıöşü]+/gi,'-').replace(/^-+|-+$/g,'')||'character';
+    a.href=url;a.download=nm+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1500);toast(u('tDl'));
+  }catch(err){doCopy();}
+}
+function openImport(){
+  openPanel('<h2>'+u('impT')+'</h2><div class="imp"><p class="hint">'+u('impHint')+'</p><input type="file" id="f-impfile" data-a="impFile" accept=".json,application/json"><textarea id="impTxt" aria-label="JSON"></textarea><div class="acts"><button type="button" class="btn pri" data-a="doImport">'+u('impGo')+'</button><button type="button" class="btn" data-a="close">'+u('close')+'</button></div></div>');
+}
+function doImport(){
+  var ta=$('#impTxt');if(!ta)return;
+  try{
+    var o=JSON.parse(ta.value),ch=o&&o.character?o.character:o;
+    if(!ch||!ED[ch.ed])throw new Error('bad');
+    S=ch;ensureDet();normalize();closePanel();render();toast(u('impOk'));
+  }catch(err){toast(u('impBad'));}
+}
+function readTextFile(file){
+  if(!file)return;
+  var fr=new FileReader();
+  fr.onload=function(){var ta=$('#impTxt');if(ta)ta.value=String(fr.result||'');};
+  fr.onerror=function(){toast(u('impBad'));};
+  fr.readAsText(file);
+}
+function readImage(file){
+  if(!file)return;
+  var fr=new FileReader();
+  fr.onerror=function(){toast(u('imgBad'));};
+  fr.onload=function(){
+    var im=new Image();
+    im.onerror=function(){toast(u('imgBad'));};
+    im.onload=function(){
+      var mx=640,sc=Math.min(1,mx/Math.max(im.width,im.height)),w=Math.max(1,Math.round(im.width*sc)),hh=Math.max(1,Math.round(im.height*sc));
+      var cv=document.createElement('canvas');cv.width=w;cv.height=hh;
+      var cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,w,hh);cx.drawImage(im,0,0,w,hh);
+      try{S.det.img=cv.toDataURL('image/jpeg',0.84);}catch(err){toast(u('imgBad'));return;}
+      render();toast(u('tImg'));
+    };
+    im.src=String(fr.result);
+  };
+  fr.readAsDataURL(file);
+}
+
+/* ---------- random character ---------- */
+function randAll(){
+  var e=E(),K=e.kind;
+  if(e.races){S.race=pick(e.races).id;var r0=gRace();S.sub=r0.sub?pick(r0.sub).id:'';S.rpick=[];}
+  S.cls=pick(validClasses()).id;
+  if(e.bgs)S.bg=pick(e.bgs).id;
+  normalize();
+  S.align=pick(validAligns());
+  var r=gRace();
+  if(K==='4e')S.r4=pick(r.opt);
+  if(K==='5e'&&r.pick){var pool=shuf(AB.filter(function(a){return r.pick.ex.indexOf(a)<0;}));S.rpick=pool.slice(0,r.pick.n);}
+  if(K==='5e24'){var b=gBg(),ab=shuf(b.ab);S.bgMode=Math.random()<0.5?'21':'111';S.bgA=ab[0];S.bgB=ab[1];}
+  S.name=genName(flavor());
+  S.hp1=null;S.hpr=[];S.gold=null;
+  genScores();
+  S.sk={};S.ranks={};S.feats=[];
+  normalize();
+  var sg2=skillGroups(),used=sg2.fixed.slice();
+  sg2.groups.forEach(function(g){
+    var pool2=shuf(g.list.filter(function(s){return used.indexOf(s)<0;})).slice(0,g.n);
+    S.sk[g.key]=pool2;used=used.concat(pool2);
+  });
+  if(K==='3.5'){
+    var c=gCls(),cap=ranksCap(),tries=0;
+    while(ranksLeft()>0&&tries<600){
+      tries++;
+      var useC=Math.random()<0.85;
+      var list=useC?c.cs:S35.map(function(s){return s[0];});
+      var id=pick(list),isC=c.cs.indexOf(id)>=0,cur=S.ranks[id]||0,mx=isC?cap:Math.floor(cap/2),cost=isC?1:2;
+      if(cur<mx&&ranksLeft()>=cost)S.ranks[id]=cur+1;
+    }
+    var names=shuf(F35.map(function(x){return x[0];}));
+    S.feats=names.slice(0,featCount());
+  }
+  normalize();
+}
+/* ---------- panels ---------- */
+function openPanel(html){$('#panel').innerHTML=html;$('#ov').hidden=false;var f=$('#panel button,#panel textarea');if(f)f.focus();}
+function closePanel(){$('#ov').hidden=true;$('#panel').innerHTML='';}
+function openSaved(){
+  var sv=getSaves(),h='<h2>'+u('savedTitle')+'</h2>';
+  if(!sv.length)h+='<p class="empty">'+u('none')+'</p>';
+  sv.forEach(function(x){
+    h+='<div class="sv"><div class="t"><b>'+esc(x.t)+'</b><span>'+esc(x.sum)+'</span></div><button type="button" class="btn" data-a="ld" data-i="'+x.id+'">'+u('load')+'</button><button type="button" class="btn" data-a="rm" data-i="'+x.id+'">'+u('del')+'</button></div>';
+  });
+  h+='<div class="acts" style="margin-top:14px"><button type="button" class="btn" data-a="close">'+u('close')+'</button></div>';
+  openPanel(h);
+}
+function openCopy(){
+  var txt=toText(model());
+  openPanel('<h2>'+u('copy')+'</h2><textarea id="cpTxt" readonly>'+esc(txt)+'</textarea><div class="acts" style="margin-top:12px"><button type="button" class="btn pri" data-a="doCopy">'+u('copyBtn')+'</button><button type="button" class="btn" data-a="close">'+u('close')+'</button></div>');
+}
+function doCopy(){
+  var ta=$('#cpTxt');if(!ta)return;
+  var fb=function(){ta.focus();ta.select();toast(u('tSel'));};
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(function(){toast(u('tCopied'));},fb);}
+    else fb();
+  }catch(err){fb();}
+}
+/* ---------- actions ---------- */
+function act(el,v){
+  var a=el.getAttribute('data-a'),i=el.getAttribute('data-i'),ab=el.getAttribute('data-ab'),s=el.getAttribute('data-s'),g=el.getAttribute('data-g');
+  var e=E(),fid=el.id;
+  switch(a){
+    case 'ed':setEdition(v,true);break;
+    case 'randAll':randAll();break;
+    case 'nameRoll':S.name=genName(flavor());break;
+    case 'lvl':S.level+=+v;break;
+    case 'align':S.align=v;break;
+    case 'alignRoll':S.align=pick(validAligns());break;
+    case 'race':S.race=v;S.sub='';S.rpick=[];break;
+    case 'raceRoll':S.race=pick(e.races).id;S.sub='';S.rpick=[];break;
+    case 'sub':S.sub=v;break;
+    case 'r4':S.r4=v;break;
+    case 'rpick':S.rpick[+i]=v;break;
+    case 'cls':S.cls=v;S.gold=null;break;
+    case 'clsRoll':S.cls=pick(validClasses()).id;S.gold=null;break;
+    case 'bg':S.bg=v;break;
+    case 'bgRoll':S.bg=pick(e.bgs).id;break;
+    case 'bgMode':S.bgMode=v;break;
+    case 'bgA':S.bgA=v;break;
+    case 'bgB':S.bgB=v;break;
+    case 'method':S.method=v;genScores();break;
+    case 'abRoll':S.base[ab]=S.method==='roll3'?roll3():roll4();break;
+    case 'abAll':genScores();break;
+    case 'abAuto':if(S.method==='buy')buyAuto();else assignSorted(AB.map(function(x){return S.base[x];}));break;
+    case 'abSet':{var b0=bounds();S.base[ab]=cl(Math.round(+v)||10,b0[0],b0[1]);break;}
+    case 'buy':{var T=costTbl(),bb=bounds(),cur=S.base[ab],nx=cur+(+v);
+      if(nx<bb[0]||nx>bb[1])break;
+      if(buySpent()-T[cur]+T[nx]>e.buyPts)break;
+      S.base[ab]=nx;break;}
+    case 'sk':{var arr=S.sk[g]||[],ix=arr.indexOf(s);if(ix>=0)arr.splice(ix,1);else arr.push(s);S.sk[g]=arr;break;}
+    case 'rank':{var c=gCls(),isC=c.cs.indexOf(s)>=0,cr=S.ranks[s]||0,mx=isC?ranksCap():Math.floor(ranksCap()/2),cost=isC?1:2;
+      if(+v>0){if(cr+1>mx||ranksLeft()<cost)break;S.ranks[s]=cr+1;}
+      else if(cr>0){S.ranks[s]=cr-1;if(S.ranks[s]<=0)delete S.ranks[s];}
+      break;}
+    case 'feat':S.feats[+i]=v;break;
+    case 'hpMode':S.hpMode=v;break;
+    case 'hpRe':S.hp1=null;S.hpr=[];break;
+    case 'page':page=v;renderSheet();renderStatic();return;
+    case 'export':openExport();return;
+    case 'import':openImport();return;
+    case 'dlJson':doDownload();return;
+    case 'img':readImage(el.files&&el.files[0]);el.value='';return;
+    case 'impFile':readTextFile(el.files&&el.files[0]);return;
+    case 'doImport':doImport();return;
+    case 'imgDel':S.det.img='';break;
+    case 'eqReset':S.det.eqEd=false;S.det.coinsEd=false;break;
+    case 'save':{
+      var sv=getSaves();
+      sv.unshift({id:Date.now(),t:S.name||u('unnamed'),sum:model().sub.join(' · ')+' · '+E().n[L].split(' · ')[0],st:JSON.parse(JSON.stringify(S))});
+      putSaves(sv.slice(0,30));toast(u('tSaved'));return;}
+    case 'saved':openSaved();return;
+    case 'copy':openCopy();return;
+    case 'doCopy':doCopy();return;
+    case 'close':closePanel();return;
+    case 'ld':{var all=getSaves(),f=all.filter(function(x){return String(x.id)===String(i);})[0];
+      if(f){S=JSON.parse(JSON.stringify(f.st));closePanel();toast(u('tLoaded'));}break;}
+    case 'rm':{putSaves(getSaves().filter(function(x){return String(x.id)!==String(i);}));toast(u('tDel'));openSaved();return;}
+    default:return;
+  }
+  render();
+  if(fid){var n=document.getElementById(fid);if(n&&!n.disabled)n.focus();}
+}
+document.addEventListener('click',function(ev){
+  var t=ev.target;if(!t.closest)return;
+  var th=t.closest('button[data-theme]');
+  if(th){var v=th.getAttribute('data-theme');document.documentElement.setAttribute('data-theme',v);store.set('dndworkshop.theme',v);renderStatic();return;}
+  var lg=t.closest('button[data-lang]');
+  if(lg){L=+lg.getAttribute('data-lang');store.set('dndworkshop.lang',String(L));render();return;}
+  var tb=t.closest('button[data-tab]');
+  if(tb){tab=tb.getAttribute('data-tab');renderStatic();window.scrollTo(0,0);return;}
+  if(t.id==='ov'){closePanel();return;}
+  var el=t.closest('button[data-a]');
+  if(!el||el.disabled)return;
+  act(el,el.getAttribute('data-v'));
+});
+document.addEventListener('change',function(ev){
+  var el=ev.target;
+  if(!el.matches||!el.matches('select[data-a],input[data-a]'))return;
+  if(el.getAttribute('data-a')==='name')return;
+  act(el,el.value);
+});
+document.addEventListener('input',function(ev){
+  var el=ev.target;
+  if(el.id==='f-name'){S.name=el.value;renderSheet();return;}
+  var d=el.getAttribute&&el.getAttribute('data-d');
+  if(d){
+    ensureDet();
+    setPath(S.det,d,el.type==='checkbox'?el.checked:el.value);
+    if(d==='equip')S.det.eqEd=true;
+    if(d.indexOf('coins.')===0)S.det.coinsEd=true;
+  }
+});
+document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!$('#ov').hidden)closePanel();});
+/* ---------- init ---------- */
+(function init(){
+  L=store.get('dndworkshop.lang')==='1'?1:0;
+  var th=store.get('dndworkshop.theme');
+  if(th==='light'||th==='dark')document.documentElement.setAttribute('data-theme',th);
+  setEdition('5e',false);
+  S.name=genName(flavor());
+  render();
+})();
+})();
+
+</script>
+</body>
+</html>
