@@ -4,7 +4,6 @@
 ![Platform](https://img.shields.io/badge/platform-Browser-darkred.svg)
 ![Language](https://img.shields.io/badge/language-TR%20%7C%20EN-blue.svg)
 ![Offline](https://img.shields.io/badge/works-offline-lightgrey.svg)
-![Editions](https://img.shields.io/badge/D%26D%20editions-6-orange.svg)
 
 A single HTML file that builds D&D character sheets for six editions of the game. Pick an edition and the creation screen, the rules and the three-page sheet all follow it. No server, no build step, no installation, no internet connection. Download one file, open it and create your character.
 
